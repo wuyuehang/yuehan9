@@ -1,0 +1,14 @@
+Call Trace:
+5403 Jun 28 15:26:21 wayland kernel: [ 1390.486843]  [<ffffffff813e6c63>] dump_stack+0x63/0x90
+5404 Jun 28 15:26:21 wayland kernel: [ 1390.486850]  [<ffffffffc00d7122>] foo_show+0x12/0x2c [kobject_example]
+5405 Jun 28 15:26:21 wayland kernel: [ 1390.486854]  [<ffffffff813e8f6f>] kobj_attr_show+0xf/0x20
+5406 Jun 28 15:26:21 wayland kernel: [ 1390.486860]  [<ffffffff8129f5dc>] sysfs_kf_seq_show+0xbc/0x130
+5407 Jun 28 15:26:21 wayland kernel: [ 1390.486864]  [<ffffffff8129dda3>] kernfs_seq_show+0x23/0x30
+5408 Jun 28 15:26:21 wayland kernel: [ 1390.486868]  [<ffffffff812415ec>] seq_read+0xec/0x390
+5409 Jun 28 15:26:21 wayland kernel: [ 1390.486874]  [<ffffffff811a4596>] ? lru_cache_add_active_or_unevictable+0x36/0xb0
+5410 Jun 28 15:26:21 wayland kernel: [ 1390.486878]  [<ffffffff8129e6e9>] kernfs_fop_read+0x109/0x180
+5411 Jun 28 15:26:21 wayland kernel: [ 1390.486882]  [<ffffffff8121b897>] __vfs_read+0x37/0x150
+5412 Jun 28 15:26:21 wayland kernel: [ 1390.486888]  [<ffffffff8134f450>] ? security_file_permission+0xa0/0xc0
+5413 Jun 28 15:26:21 wayland kernel: [ 1390.486892]  [<ffffffff8121bd75>] vfs_read+0x95/0x140
+5414 Jun 28 15:26:21 wayland kernel: [ 1390.486895]  [<ffffffff8121d275>] SyS_read+0x55/0xc0
+5415 Jun 28 15:26:21 wayland kernel: [ 1390.486900]  [<ffffffff81817ab6>] entry_SYSCALL_64_fastpath+0x1e/0xa8

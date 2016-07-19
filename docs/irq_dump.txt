@@ -1,0 +1,15 @@
+[17190.197551] Call Trace:
+[17190.197553]  <IRQ>  [<ffffffff813eab23>] dump_stack+0x63/0x90
+[17190.197564]  [<ffffffffc03aa00e>] irq_handler+0xe/0x1e [sharedirq]
+[17190.197567]  [<ffffffff810daa6d>] handle_irq_event_percpu+0x8d/0x1d0
+[17190.197569]  [<ffffffff810dabee>] handle_irq_event+0x3e/0x60
+[17190.197572]  [<ffffffff810de12d>] handle_edge_irq+0x7d/0x150
+[17190.197576]  [<ffffffff8103117a>] handle_irq+0x1a/0x30
+[17190.197579]  [<ffffffff818285db>] do_IRQ+0x4b/0xd0
+[17190.197581]  [<ffffffff818266c2>] common_interrupt+0x82/0x82
+[17190.197582]  <EOI>  [<ffffffffc03b6010>] ? simulator_driver_read+0x10/0x10 [simulator]
+[17190.197588]  [<ffffffffc03b6020>] ? simulator_driver_ioctl+0x10/0x20 [simulator]
+[17190.197591]  [<ffffffff8122062f>] do_vfs_ioctl+0x29f/0x490
+[17190.197594]  [<ffffffff8120cd34>] ? vfs_read+0x114/0x130
+[17190.197596]  [<ffffffff81220899>] SyS_ioctl+0x79/0x90
+[17190.197600]  [<ffffffff81825bf2>] entry_SYSCALL_64_fastpath+0x16/0x7
