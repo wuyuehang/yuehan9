@@ -29,3 +29,11 @@ draw_font_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += gl-triangle
 gl_triangle_SOURCES = gl-triangle.c
 gl_triangle_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += gl-vertex
+gl_vertex_SOURCES = gl-vertex.c
+gl_vertex_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += gl-line
+gl_line_SOURCES = gl-line.c
+gl_line_CFLAGS = $(AM_CFLAGS)
