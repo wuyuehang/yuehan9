@@ -37,3 +37,7 @@ gl_vertex_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += gl-line
 gl_line_SOURCES = gl-line.c
 gl_line_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += minimal
+minimal_SOURCES = minimal.c
+minimal_CFLAGS = $(AM_CFLAGS)
