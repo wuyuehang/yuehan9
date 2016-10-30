@@ -41,3 +41,7 @@ gl_line_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += minimal
 minimal_SOURCES = minimal.c
 minimal_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += pyramid
+pyramid_SOURCES = pyramid.c
+pyramid_CFLAGS = $(AM_CFLAGS)
