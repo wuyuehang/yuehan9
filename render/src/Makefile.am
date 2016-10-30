@@ -1,6 +1,6 @@
 bin_PROGRAMS =
 AM_CFLAGS = $(GCC_CFLAGS)
-LDADD = @X11_LIBS@ @GLU_LIBS@ -lglut
+LDADD = @X11_LIBS@ @GLU_LIBS@ -lglut -lm
 
 bin_PROGRAMS += basic-win
 basic_win_SOURCES = basic-win.c
