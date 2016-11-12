@@ -45,3 +45,7 @@ minimal_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += pyramid
 pyramid_SOURCES = pyramid.c
 pyramid_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += infos
+infos_SOURCES = infos.c
+infos_CFLAGS = $(AM_CFLAGS)
