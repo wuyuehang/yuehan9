@@ -1,6 +1,7 @@
 #include <GL/glut.h>
 
 static unsigned int style = 0;
+int g_win;
 
 void displayCB(void)		/* function called whenever redisplay needed */
 {
@@ -51,8 +52,10 @@ void displayCB(void)		/* function called whenever redisplay needed */
 
 void keyCB(unsigned char key, int x, int y)
 {
-	if (key == 'q') exit(0);
-	else if (key == ' ') {
+	if (key == 'q') {
+		glutDestroyWindow(g_win);
+		exit(0);
+	} else if (key == ' ') {
 		style = (style > 2) ? 0 : (style + 1);
 		glutPostRedisplay();
 	}
@@ -61,15 +64,13 @@ void keyCB(unsigned char key, int x, int y)
 
 int main(int argc, char *argv[])
 {
-  int win;
-
 	glutInit(&argc, argv);		/* initialize GLUT system */
 
 	glutInitDisplayMode(GLUT_RGB);
 	glutInitWindowSize(600, 600);
-	win = glutCreateWindow("Triangle");
+	g_win = glutCreateWindow("Triangle");
 
-	/* from this point on the current window is win */
+	/* from this point on the current window is g_win */
 
 	glClearColor(0.0,0.0,0.0,0.0);
 	gluOrtho2D(0, 600, 0, 600);

@@ -1,5 +1,7 @@
 #include <GL/glut.h>
 
+int g_win;
+
 void displayCB(void)		/* function called whenever redisplay needed */
 {
 	glClear(GL_COLOR_BUFFER_BIT);		/* clear the display */
@@ -18,21 +20,22 @@ void displayCB(void)		/* function called whenever redisplay needed */
 
 void keyCB(unsigned char key, int x, int y)
 {
-	if(key == 'q') exit(0);
+	if(key == 'q') {
+		glutDestroyWindow(g_win);
+		exit(0);
+	}
 }
 
 
 int main(int argc, char *argv[])
 {
-	int win;
-
 	glutInit(&argc, argv);		/* initialize GLUT system */
 
 	glutInitDisplayMode(GLUT_RGB);
 	glutInitWindowSize(600, 600);
-	win = glutCreateWindow("Vertex");
+	g_win = glutCreateWindow("Vertex");
 
-	/* from this point on the current window is win */
+	/* from this point on the current window is g_win */
 
 	glClearColor(0.0,0.0,0.0,0.0);
 	gluOrtho2D(0, 600, 0, 600);

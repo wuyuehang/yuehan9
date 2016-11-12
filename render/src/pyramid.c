@@ -11,6 +11,7 @@ GLuint g_vbo;
 GLuint g_ibo;
 GLuint g_program;
 GLuint g_world_mat;
+int g_win;
 
 static const char *vs_src[] = {"#version 430\n"
   "layout (location = 0) in vec3 Position;"
@@ -54,7 +55,10 @@ void compile_shader()
 
 void keycb(unsigned char key, int x, int y)
 {
-  if (key == 'q') exit(0);
+  if (key == 'q') {
+		glutDestroyWindow(g_win);
+		exit(0);
+	}
 }
 
 void render()
@@ -116,7 +120,7 @@ int main(int argc, char**argv)
 
   glutInitWindowSize(500, 500);
 
-  glutCreateWindow("render");
+  g_win = glutCreateWindow("render");
 
   glutKeyboardFunc(keycb);
 
