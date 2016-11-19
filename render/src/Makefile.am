@@ -1,6 +1,6 @@
 bin_PROGRAMS =
 AM_CFLAGS = $(GCC_CFLAGS)
-LDADD = @X11_LIBS@ @GLU_LIBS@ -lglut -lm
+LDADD = @X11_LIBS@ @GLU_LIBS@ @GLFW3_LIBS@ @GLEW_LIBS@ -lglut -lm
 
 bin_PROGRAMS += basic-win
 basic_win_SOURCES = basic-win.c
@@ -49,3 +49,7 @@ pyramid_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += infos
 infos_SOURCES = infos.c
 infos_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += glfw_demo
+glfw_demo_SOURCES = glfw_demo.c
+glfw_CFLAGS = $(AM_CFLAGS)
