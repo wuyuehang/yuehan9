@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 
 extern GLboolean glewExperimental;
 
 GLuint g_program;
 GLuint g_vao;
 GLuint g_vbo;
+GLuint g_translate;
 
 static void error_cb(int error, const char* description)
 {
@@ -22,9 +25,10 @@ void key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
 
 const GLchar* vs_src = "#version 330 core\n"
 		"layout (location = 0) in vec3 position;"
+		"uniform mat4 translate;"
 		"void main()"
 		"{"
-		"gl_Position = vec4(position.x, position.y, position.z, 1.0);"
+		"gl_Position = translate * vec4(position.x, position.y, position.z, 1.0);"
 		"}";
 
 const GLchar* fs_src = "#version 330 core\n"
@@ -75,6 +79,9 @@ void compile_shader(void)
 	glUseProgram(g_program);
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
+
+	g_translate = glGetUniformLocation(g_program, "translate");
+	assert(g_translate != 0xFFFFFFFF);
 }
 
 void create_resource(void)
@@ -102,6 +109,10 @@ void create_resource(void)
 
 void render(void)
 {
+	/* translate target triangle in +0.5x, +0.5y, +0.5z, that is right corner */
+	glm::mat4 translate_mat = glm::translate(glm::vec3(0.5f, 0.5f, 0.5f));
+
+	glUniformMatrix4fv(g_translate, 1, GL_FALSE, &translate_mat[0][0]);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 

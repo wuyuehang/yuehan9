@@ -1,8 +1,15 @@
 #include <assert.h>
+#include <stdio.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 extern GLboolean glewExperimental;
+
+static void error_cb(int error, const char* description)
+{
+	fputs(description, stderr);
+	fputs("\n", stderr);
+}
 
 void key_cb(GLFWwindow *win, int key, int scancode, int action, int mode)
 {
@@ -14,6 +21,8 @@ int main(int argc, char **argv)
 {
 	GLFWwindow* win = NULL;
 	int width, height;
+
+	glfwSetErrorCallback(error_cb);
 
 	glfwInit();
 
