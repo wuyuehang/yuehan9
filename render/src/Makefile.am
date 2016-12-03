@@ -63,3 +63,15 @@ glfw_draw_tri_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += translation_test
 translation_test_SOURCES = translation_test.cpp
 translation_test_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_draw_rect
+glfw_draw_rect_SOURCES = glfw_draw_rect.c
+glfw_draw_rect_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += glfw_indexdraw_rect
+glfw_indexdraw_rect_SOURCES = glfw_indexdraw_rect.c
+glfw_indexdraw_rect_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += glfw_indexdraw_rect_strip
+glfw_indexdraw_rect_strip_SOURCES = glfw_indexdraw_rect_strip.c
+glfw_indexdraw_rect_strip_CFLAGS = $(AM_CFLAGS)
