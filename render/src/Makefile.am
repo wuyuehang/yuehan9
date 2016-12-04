@@ -1,7 +1,7 @@
 bin_PROGRAMS =
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CXXFLAGS = $(GXX_CFLAGS)
-LDADD = @X11_LIBS@ @GLU_LIBS@ @GLFW3_LIBS@ @GLEW_LIBS@ -lm
+LDADD = @X11_LIBS@ @GLU_LIBS@ @GLFW3_LIBS@ @GLEW_LIBS@ -lm -lSOIL
 
 bin_PROGRAMS += basic-win
 basic_win_SOURCES = basic-win.c
@@ -83,3 +83,7 @@ mvp_test_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += glfw_indexdraw_cube
 glfw_indexdraw_cube_SOURCES = glfw_indexdraw_cube.cpp
 glfw_indexdraw_cube_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_texture2d_rect
+glfw_texture2d_rect_SOURCES = glfw_texture2d_rect.cpp
+glfw_texture2d_rect_CXXFLAGS = $(AM_CXXFLAGS)
