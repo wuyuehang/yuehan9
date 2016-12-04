@@ -75,3 +75,11 @@ glfw_indexdraw_rect_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += glfw_indexdraw_rect_strip
 glfw_indexdraw_rect_strip_SOURCES = glfw_indexdraw_rect_strip.c
 glfw_indexdraw_rect_strip_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += mvp_test
+mvp_test_SOURCES = mvp_test.cpp
+mvp_test_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_indexdraw_cube
+glfw_indexdraw_cube_SOURCES = glfw_indexdraw_cube.cpp
+glfw_indexdraw_cube_CXXFLAGS = $(AM_CXXFLAGS)
