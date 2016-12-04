@@ -87,3 +87,7 @@ glfw_indexdraw_cube_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += glfw_texture2d_rect
 glfw_texture2d_rect_SOURCES = glfw_texture2d_rect.cpp
 glfw_texture2d_rect_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_texture2d_cube
+glfw_texture2d_cube_SOURCES = glfw_texture2d_cube.cpp
+glfw_texture2d_cube_CXXFLAGS = $(AM_CXXFLAGS)
