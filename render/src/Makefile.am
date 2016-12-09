@@ -111,3 +111,7 @@ glfw_gs_point2line_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += glfw_gs_point2triangle
 glfw_gs_point2triangle_SOURCES = glfw_gs_point2triangle.c
 glfw_gs_point2triangle_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += glfw_vs_feedback_point
+glfw_vs_feedback_point_SOURCES = glfw_vs_feedback_point.cpp
+glfw_vs_feedback_point_CXXFLAGS = $(AM_CXXFLAGS)
