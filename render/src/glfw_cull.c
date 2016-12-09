@@ -30,8 +30,7 @@ void key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
 
 int main(int argc, char **argv)
 {
-	GLuint vao;
-	GLuint vbo_index, vbo_pos, vbo_color;
+	GLuint vbo, vao;
 	GLuint vertex_shader, fragment_shader;
 	GLuint program;
 
@@ -50,49 +49,37 @@ int main(int argc, char **argv)
 
 	glViewport(0, 0, 500, 500);
 
-	GLfloat pos_buf[] = {
-			-0.25f, 0.25f, 0.0f,
-			0.25f, -0.25f, 0.0f,
-			-0.25f, -0.25f, 0.0f,
-			0.25f, 0.25f, 0.0f
-	};
-
-	GLfloat color_buf[] = {
-			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			1.0f, 1.0f, 0.0f, 0.0f,
-	};
-
-	GLushort index_buf[] = {
-			0, 1, 2,
-			0, 3, 1
+	/* packed in vec3 (pos) + vec4 (color) */
+	GLfloat buffer[] = {
+			/* down triangle in clock-wise direction */
+			-0.25f, 0.25f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+			0.25f, -0.25f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+			-0.25f, -0.25f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+			/* up triangle  in counter clock-wise direction */
+			-0.25f, 0.25f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+			0.25f, -0.25f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+			0.25f, 0.25f, 0.25f, 1.0f, 1.0f, 0.0f, 0.0f
 	};
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	/* setup array buffer for position and color
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(buffer), buffer, GL_STATIC_DRAW);
+
+	/* here we pack position and color buffer into a single
+	 * vbo, therefore the offset should be considered when setting
+	 * its relative attribute index on glsl side
 	 */
-	glGenBuffers(1, &vbo_pos);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(pos_buf), pos_buf, GL_STATIC_DRAW);
-
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
-
-	glGenBuffers(1, &vbo_color);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_color);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(color_buf), color_buf, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid *)0);
 
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid *)0);
-
-	/* setup index buffer for index
+	/* color buffer content is 3*sizeof(GLfloat) = 12
+	 * offset from the vbo
 	 */
-	glGenBuffers(1, &vbo_index);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_index);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_buf), index_buf, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid *)12);
 
 	/* setup shader */
 	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -112,21 +99,25 @@ int main(int argc, char **argv)
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
 
+	/* enable cull face, in following senario,
+	 * only down triangle in cw direction is rendered
+	 */
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CW);
+
 	while (!glfwWindowShouldClose(win))
 	{
 		glfwPollEvents();
 
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		glfwSwapBuffers(win);
 	}
 
-	glDeleteBuffers(1, &vbo_pos);
-	glDeleteBuffers(1, &vbo_color);
-	glDeleteBuffers(1, &vbo_index);
+	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
 
 	glfwTerminate();

@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* win = glfwCreateWindow(500, 500, "index dual tri strip", NULL, NULL);
+	GLFWwindow* win = glfwCreateWindow(500, 500, __FILE__, NULL, NULL);
 	glfwMakeContextCurrent(win);
 	glfwSetKeyCallback(win, key_cb);
 

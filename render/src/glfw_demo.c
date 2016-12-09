@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	win = glfwCreateWindow(600, 600, "glfw demo", NULL, NULL);
+	win = glfwCreateWindow(600, 600, __FILE__, NULL, NULL);
 	assert(NULL != win);
 
 	glfwSetKeyCallback(win, key_cb);

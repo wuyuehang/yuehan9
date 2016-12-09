@@ -99,3 +99,15 @@ scale_test_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += rotate_test
 rotate_test_SOURCES = rotate_test.cpp
 rotate_test_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_cull
+glfw_cull_SOURCES = glfw_cull.c
+glfw_cull_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += glfw_gs_point2line
+glfw_gs_point2line_SOURCES = glfw_gs_point2line.c
+glfw_gs_point2line_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += glfw_gs_point2triangle
+glfw_gs_point2triangle_SOURCES = glfw_gs_point2triangle.c
+glfw_gs_point2triangle_CFLAGS = $(AM_CFLAGS)

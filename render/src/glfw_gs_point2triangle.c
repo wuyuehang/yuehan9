@@ -1,15 +1,13 @@
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
 
 extern GLboolean glewExperimental;
 
 GLuint g_program;
 GLuint g_vao;
 GLuint g_vbo;
-GLuint g_translate;
+GLuint g_vbo_color;
 
 static void error_cb(int error, const char* description)
 {
@@ -25,23 +23,44 @@ void key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
 
 const GLchar* vs_src = "#version 330 core\n"
 		"layout (location = 0) in vec3 position;"
-		"uniform mat4 translate;"
+		"layout (location = 1) in vec4 color;"
+		"out vec4 vs_color;"
 		"void main()"
 		"{"
-		"gl_Position = translate * vec4(position.x, position.y, position.z, 1.0);"
+		"gl_Position = vec4(position.x, position.y, position.z, 1.0);"
+		"vs_color = color;"
+		"}";
+
+const GLchar* gs_src = "#version 330 core\n"
+		"layout (points) in;"
+		"layout (triangle_strip, max_vertices = 3) out;"
+		"in vec4 vs_color[];"
+		"out vec4 gs_color;"
+		"void main()"
+		"{"
+		"gs_color = vs_color[0];"
+		"gl_Position = gl_in[0].gl_Position + vec4(-0.1, -0.1, 0.0, 0.0);"
+		"EmitVertex();"
+		"gl_Position = gl_in[0].gl_Position + vec4(0.1, -0.1, 0.0, 0.0);"
+		"EmitVertex();"
+		"gl_Position = gl_in[0].gl_Position + vec4(0, 0.1, 0, 0);"
+		"EmitVertex();"
+		"EndPrimitive();"
 		"}";
 
 const GLchar* fs_src = "#version 330 core\n"
+		"in vec4 gs_color;"
 		"out vec4 color;"
 		"void main()"
 		"{"
-		"color = vec4(1.0f, 0.5f, 0.2f, 1.0f);"
+		"color = gs_color;"
 		"}";
 
 void compile_shader(void)
 {
 	GLuint vertex_shader;
 	GLuint fragment_shader;
+	GLuint geometry_shader;
 	GLint status;
 	GLchar message[512];
 
@@ -65,8 +84,19 @@ void compile_shader(void)
 		printf("%s\n", message);
 	}
 
+	geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
+	glShaderSource(geometry_shader, 1, &gs_src, NULL);
+	glCompileShader(geometry_shader);
+
+	glGetShaderiv(geometry_shader, GL_COMPILE_STATUS, &status);
+	if (!status) {
+		glGetShaderInfoLog(geometry_shader, 512, NULL, message);
+		printf("%s\n", message);
+	}
+
 	g_program = glCreateProgram();
 	glAttachShader(g_program, vertex_shader);
+	glAttachShader(g_program, geometry_shader);
 	glAttachShader(g_program, fragment_shader);
 	glLinkProgram(g_program);
 
@@ -79,9 +109,6 @@ void compile_shader(void)
 	glUseProgram(g_program);
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
-
-	g_translate = glGetUniformLocation(g_program, "translate");
-	assert(g_translate != 0xFFFFFFFF);
 }
 
 void create_resource(void)
@@ -90,6 +117,12 @@ void create_resource(void)
 			-0.5f, -0.5f, 0.0f,
 			 0.5f, -0.5f, 0.0f,
 			 0.0f,  0.5f, 0.0f
+	};
+
+	GLfloat vb_color[] = {
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f
 	};
 
 	glGenVertexArrays(1, &g_vao);
@@ -104,20 +137,24 @@ void create_resource(void)
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	/* attach color buffer */
+	glGenBuffers(1, &g_vbo_color);
+	glBindBuffer(GL_ARRAY_BUFFER, g_vbo_color);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vb_color), vb_color, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+
 	glBindVertexArray(0);
 }
 
 void render(void)
 {
-	/* translate target triangle in +0.5x, +0.5y, +0.5z, that is right corner */
-	glm::mat4 translate_mat = glm::translate(glm::vec3(0.5f, 0.5f, 0.5f));
-
-	glUniformMatrix4fv(g_translate, 1, GL_FALSE, &translate_mat[0][0]);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glBindVertexArray(g_vao);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_POINTS, 0, 3);
 	glBindVertexArray(0);
 }
 

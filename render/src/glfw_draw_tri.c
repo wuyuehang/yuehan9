@@ -128,7 +128,7 @@ int main(int argc, char **argv)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	GLFWwindow* win = glfwCreateWindow(500, 500, "glfw_draw_tri", NULL, NULL);
+	GLFWwindow* win = glfwCreateWindow(500, 500, __FILE__, NULL, NULL);
 
 	glfwMakeContextCurrent(win);
 
