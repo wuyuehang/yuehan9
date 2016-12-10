@@ -119,3 +119,7 @@ glfw_vs_feedback_point_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += animation_cube_orbit
 animation_cube_orbit_SOURCES = animation_cube_orbit.cpp
 animation_cube_orbit_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += animation_orbit_light
+animation_orbit_light_SOURCES = animation_orbit_light.cpp
+animation_orbit_light_CXXFLAGS = $(AM_CXXFLAGS)
