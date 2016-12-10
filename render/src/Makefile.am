@@ -98,3 +98,7 @@ animation_cube_orbit_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += animation_orbit_light
 animation_orbit_light_SOURCES = animation_orbit_light.cpp
 animation_orbit_light_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_dual_vao
+glfw_dual_vao_SOURCES = glfw_dual_vao.cpp
+glfw_dual_vao_CXXFLAGS = $(AM_CXXFLAGS)
