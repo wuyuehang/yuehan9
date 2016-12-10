@@ -27,31 +27,6 @@ bin_PROGRAMS += draw-font
 draw_font_SOURCES = draw-font.c
 draw_font_CFLAGS = $(AM_CFLAGS)
 
-# skip glut dependency build binary
-#bin_PROGRAMS += gl-triangle
-#gl_triangle_SOURCES = gl-triangle.c
-#gl_triangle_CFLAGS = $(AM_CFLAGS)
-
-#bin_PROGRAMS += gl-vertex
-#gl_vertex_SOURCES = gl-vertex.c
-#gl_vertex_CFLAGS = $(AM_CFLAGS)
-
-#bin_PROGRAMS += gl-line
-#gl_line_SOURCES = gl-line.c
-#gl_line_CFLAGS = $(AM_CFLAGS)
-
-#bin_PROGRAMS += minimal
-#minimal_SOURCES = minimal.c
-#minimal_CFLAGS = $(AM_CFLAGS)
-
-#bin_PROGRAMS += pyramid
-#pyramid_SOURCES = pyramid.c
-#pyramid_CFLAGS = $(AM_CFLAGS)
-
-#bin_PROGRAMS += infos
-#infos_SOURCES = infos.c
-#infos_CFLAGS = $(AM_CFLAGS)
-
 bin_PROGRAMS += glfw_demo
 glfw_demo_SOURCES = glfw_demo.c
 glfw_CFLAGS = $(AM_CFLAGS)
