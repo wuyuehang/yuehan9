@@ -102,3 +102,7 @@ animation_orbit_light_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += glfw_dual_vao
 glfw_dual_vao_SOURCES = glfw_dual_vao.cpp
 glfw_dual_vao_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_phong_model
+glfw_phong_model_SOURCES = glfw_phong_model.cpp
+glfw_phong_model_CXXFLAGS = $(AM_CXXFLAGS)
