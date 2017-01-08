@@ -10,3 +10,7 @@ egl_clear_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += egl_template
 egl_template_SOURCES = egl_template.c
 egl_templater_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += es3_draw_tri
+es3_draw_tri_SOURCES = es3_draw_tri.c
+es3_draw_tri_CFLAGS = $(AM_CFLAGS)
