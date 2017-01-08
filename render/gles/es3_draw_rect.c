@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 	GLchar *source = NULL;
 
 	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	load_shader_from_file("shaders/es3_draw_tri.vert", &source);
+	load_shader_from_file("shaders/es3_draw_rect.vert", &source);
 	glShaderSource(vertex_shader, 1, (const GLchar * const*)&source, NULL);
 	glCompileShader(vertex_shader);
 
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 
 	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
 	free(source);
-	load_shader_from_file("shaders/es3_draw_tri.frag", &source);
+	load_shader_from_file("shaders/es3_draw_rect.frag", &source);
 	glShaderSource(fragment_shader, 1, (const GLchar * const*)&source, NULL);
 	glCompileShader(fragment_shader);
 
@@ -60,23 +60,40 @@ int main(int argc, char **argv)
 	glUseProgram(prog);
 
 	/* set up resource */
-	GLfloat pos_buf[] = {
-			-0.5f, -0.5f, 0.0f,
-			 0.5f, -0.5f, 0.0f,
-			 0.0f,  0.5f, 0.0f
+
+	/* packed in vec3 (pos) + vec4 (color) */
+	GLfloat buffer[] = {
+			/* down triangle */
+			-0.25f, 0.25f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+			0.25f, -0.25f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+			-0.25f, -0.25f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+			/* up triangle */
+			-0.25f, 0.25f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+			0.25f, 0.25f, 0.25f, 1.0f, 1.0f, 0.0f, 0.0f,
+			0.25f, -0.25f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f
 	};
 
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	GLuint vbo_pos;
-	glGenBuffers(1, &vbo_pos);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(pos_buf), pos_buf, GL_STATIC_DRAW);
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(buffer), buffer, GL_STATIC_DRAW);
 
+	/* here we pack position and color buffer into a single
+	 * vbo, therefore the offset should be considered when setting
+	 * its relative attribute index on glsl side
+	 */
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid *)0);
+
+	glEnableVertexAttribArray(1);
+	/* color buffer content is 3*sizeof(GLfloat) = 12
+	 * offset from the vbo
+	 */
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid *)12);
 
 	/* game loop */
 	while (1) {
@@ -86,11 +103,11 @@ int main(int argc, char **argv)
 		switch(wrt->event.type) {
 		case Expose:
 			/* do the render */
-			glClearColor(0.6f, 0.4f, 0.2f, 1.0f);
+			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			glBindVertexArray(vao);
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
 			glBindVertexArray(0);
 
 			eglSwapBuffers(wrt->egl_display, wrt->egl_surface);
@@ -107,7 +124,7 @@ finish:
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
 	glDeleteProgram(prog);
-	glDeleteBuffers(1, &vbo_pos);
+	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
 	destroy_warp_runtime(wrt);
 	return 0;
