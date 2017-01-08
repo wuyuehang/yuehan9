@@ -47,6 +47,8 @@ PKG_CHECK_MODULES(GL, [gl])
 PKG_CHECK_MODULES(GLU, [glu])
 PKG_CHECK_MODULES(GLFW3, [glfw3])
 PKG_CHECK_MODULES(GLEW, [glew])
+PKG_CHECK_MODULES(EGL, [egl])
+PKG_CHECK_MODULES(GLES, [glesv2])
 
 dnl compile with debug symbols
 AC_ARG_ENABLE(debug,
@@ -61,5 +63,6 @@ fi
 
 AC_OUTPUT([
 	Makefile
+	gles/Makefile
 	src/Makefile
 ])
