@@ -6,3 +6,7 @@ LDADD = @X11_LIBS@ @GLES_LIBS@ @EGL_LIBS@
 bin_PROGRAMS += egl_clear
 egl_clear_SOURCES = egl_clear.c
 egl_clear_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += egl_template
+egl_template_SOURCES = egl_template.c
+egl_templater_CFLAGS = $(AM_CFLAGS)
