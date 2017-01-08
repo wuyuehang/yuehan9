@@ -165,13 +165,11 @@ int main(int argc, char **argv)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	/* game loop */
 	while (1) {
 
-		XNextEvent(wrt->x11_display, &(wrt->event));
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		struct timeval tv;
 		gettimeofday(&tv, NULL);
@@ -183,49 +181,52 @@ int main(int argc, char **argv)
 
 		float gap = (tv.tv_sec * 1000000 + tv.tv_usec - startup) / 10000.0f;
 
-		switch(wrt->event.type) {
-		case Expose:
-			/* prepare matrix for drawing first orbit box */
-			scale_mat = glm::scale(glm::vec3(0.5f, 0.5f, 0.5f));
+		/* prepare matrix for drawing first orbit box */
+		scale_mat = glm::scale(glm::vec3(0.5f, 0.5f, 0.5f));
 
-			rotate_mat = glm::rotate(glm::mat4(1.0f), glm::radians(gap), glm::vec3(0.0f, 1.0f, 0.0f));
+		rotate_mat = glm::rotate(glm::mat4(1.0f), glm::radians(gap), glm::vec3(0.0f, 1.0f, 0.0f));
 
-			translate_mat = glm::translate(glm::vec3(2.0f, 0.0f, 0.0f));
+		translate_mat = glm::translate(glm::vec3(2.0f, 0.0f, 0.0f));
 
-			world_mat = rotate_mat * translate_mat * scale_mat;
+		world_mat = rotate_mat * translate_mat * scale_mat;
 
-			mvp_mat = proj_mat * view_mat * world_mat;
+		mvp_mat = proj_mat * view_mat * world_mat;
 
-			glBindVertexArray(vao[0]);
-			glUseProgram(program[0]);
-			glUniformMatrix4fv(mvp_uni[0], 1, GL_FALSE, &mvp_mat[0][0]);
+		glBindVertexArray(vao[0]);
+		glUseProgram(program[0]);
+		glUniformMatrix4fv(mvp_uni[0], 1, GL_FALSE, &mvp_mat[0][0]);
 
-			glDrawArrays(GL_TRIANGLES, 0, 3 * 36);
-			glBindVertexArray(0);
+		glDrawArrays(GL_TRIANGLES, 0, 3 * 36);
+		glBindVertexArray(0);
 
-			/* prepare matrix for drawing second rotate box */
-			scale_mat = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
+		/* prepare matrix for drawing second rotate box */
+		scale_mat = glm::scale(glm::vec3(1.0f, 1.0f, 1.0f));
 
-			rotate_mat = glm::rotate(glm::mat4(1.0f), glm::radians(gap / 2.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		rotate_mat = glm::rotate(glm::mat4(1.0f), glm::radians(gap / 2.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-			world_mat = rotate_mat * scale_mat;
+		world_mat = rotate_mat * scale_mat;
 
-			mvp_mat = proj_mat * view_mat * world_mat;
+		mvp_mat = proj_mat * view_mat * world_mat;
 
-			glBindVertexArray(vao[1]);
-			glUseProgram(program[1]);
-			glUniformMatrix4fv(mvp_uni[1], 1, GL_FALSE, &mvp_mat[0][0]);
+		glBindVertexArray(vao[1]);
+		glUseProgram(program[1]);
+		glUniformMatrix4fv(mvp_uni[1], 1, GL_FALSE, &mvp_mat[0][0]);
 
-			glDrawArrays(GL_TRIANGLES, 0, 3 * 36);
-			glBindVertexArray(0);
+		glDrawArrays(GL_TRIANGLES, 0, 3 * 36);
+		glBindVertexArray(0);
 
-			eglSwapBuffers(wrt->egl_display, wrt->egl_surface);
-			break;
-		case ButtonPress:
-		case KeyPress:
-			goto finish;
-		default:
-			break;
+		eglSwapBuffers(wrt->egl_display, wrt->egl_surface);
+
+		while (XPending(wrt->x11_display)) {
+			XNextEvent(wrt->x11_display, &(wrt->event));
+
+			switch(wrt->event.type) {
+				case ButtonPress:
+				case KeyPress:
+					goto finish;
+				default:
+					break;
+			}
 		}
 	}
 
