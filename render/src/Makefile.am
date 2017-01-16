@@ -106,3 +106,7 @@ glfw_dual_vao_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += glfw_phong_model
 glfw_phong_model_SOURCES = glfw_phong_model.cpp
 glfw_phong_model_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_ubo
+glfw_ubo_SOURCES = glfw_ubo.cpp
+glfw_ubo_CXXFLAGS = $(AM_CXXFLAGS)

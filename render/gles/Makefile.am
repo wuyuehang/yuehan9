@@ -42,3 +42,7 @@ es3_texture2d_rect_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += es3_texture2d_cube
 es3_texture2d_cube_SOURCES = es3_texture2d_cube.cpp
 es3_texture2d_cube_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += es3_ubo
+es3_ubo_SOURCES = es3_ubo.cpp
+es3_ubo_CXXFLAGS = $(AM_CXXFLAGS)
