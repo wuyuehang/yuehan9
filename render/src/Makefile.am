@@ -122,3 +122,7 @@ glfw_draw_inst_1_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += glfw_scissor
 glfw_scissor_SOURCES = glfw_scissor.cpp
 glfw_scissor_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_blend
+glfw_blend_SOURCES = glfw_blend.cpp
+glfw_blend_CXXFLAGS = $(AM_CXXFLAGS)
