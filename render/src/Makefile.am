@@ -114,3 +114,7 @@ glfw_ubo_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += glfw_draw_inst_0
 glfw_draw_inst_0_SOURCES = glfw_draw_inst_0.cpp
 glfw_draw_inst_0_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_draw_inst_1
+glfw_draw_inst_1_SOURCES = glfw_draw_inst_1.cpp
+glfw_draw_inst_1_CXXFLAGS = $(AM_CXXFLAGS)

@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 	GLchar *source = NULL;
 
 	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	load_shader_from_file("shaders/es3_instance_0.vert", &source);
+	load_shader_from_file("shaders/es3_instance_1.vert", &source);
 	glShaderSource(vertex_shader, 1, (const GLchar * const*)&source, NULL);
 	glCompileShader(vertex_shader);
 
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
 	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
 	free(source);
-	load_shader_from_file("shaders/es3_instance_0.frag", &source);
+	load_shader_from_file("shaders/es3_instance_1.frag", &source);
 	glShaderSource(fragment_shader, 1, (const GLchar * const*)&source, NULL);
 	glCompileShader(fragment_shader);
 
@@ -87,6 +87,10 @@ int main(int argc, char **argv)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
 
+	GLuint vbo_inst;
+	glGenBuffers(1, &vbo_inst);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_inst);
+
 	glm::vec2 go[QUALD];
 	int index = 0;
 	GLfloat rate = -0.90;
@@ -100,13 +104,10 @@ int main(int argc, char **argv)
 		}
 	}
 
-	char str[16];
-
-	for (int i = 0; i < QUALD; i++) {
-		snprintf(str, 16, "offsets[%d]", i);
-		GLuint offsets_idx = glGetUniformLocation(prog, str);
-		glUniform2f(offsets_idx, go[i].x, go[i].y);
-	}
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * QUALD, &go[0], GL_STATIC_DRAW);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
+	glVertexAttribDivisor(1, 1);
 
 	/* game loop */
 	while (1) {
@@ -135,6 +136,7 @@ int main(int argc, char **argv)
 
 finish:
 	glDeleteBuffers(1, &vbo_pos);
+	glDeleteBuffers(1, &vbo_inst);
 	glDeleteVertexArrays(1, &vao);
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);

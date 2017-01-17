@@ -50,3 +50,7 @@ es3_ubo_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += es3_instance_0
 es3_instance_0_SOURCES = es3_instance_0.cpp
 es3_instance_0_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += es3_instance_1
+es3_instance_1_SOURCES = es3_instance_1.cpp
+es3_instance_1_CXXFLAGS = $(AM_CXXFLAGS)
