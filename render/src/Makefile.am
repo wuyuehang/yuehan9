@@ -126,3 +126,7 @@ glfw_scissor_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += glfw_blend
 glfw_blend_SOURCES = glfw_blend.cpp
 glfw_blend_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_fb_renderbuffer
+glfw_fb_renderbuffer_SOURCES = glfw_fb_renderbuffer.cpp
+glfw_fb_renderbuffer_CXXFLAGS = $(AM_CXXFLAGS)
