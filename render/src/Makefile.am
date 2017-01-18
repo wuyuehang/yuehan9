@@ -134,3 +134,7 @@ glfw_fb_renderbuffer_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += glfw_fb_rendertex
 glfw_fb_rendertex_SOURCES = glfw_fb_rendertex.cpp
 glfw_fb_rendertex_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += glfw_fb_mrt
+glfw_fb_mrt_SOURCES = glfw_fb_mrt.cpp
+glfw_fb_mrt_CXXFLAGS = $(AM_CXXFLAGS)
