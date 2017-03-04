@@ -1,7 +1,7 @@
 bin_PROGRAMS =
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CXXFLAGS = $(GXX_CFLAGS)
-LDADD = @X11_LIBS@ @GLU_LIBS@ @GLFW3_LIBS@ @GLEW_LIBS@ -lm -lSOIL
+LDADD = @X11_LIBS@ @GLFW3_LIBS@ @GLEW_LIBS@ -lm -lSOIL
 
 bin_PROGRAMS += basic-win
 basic_win_SOURCES = basic-win.c
