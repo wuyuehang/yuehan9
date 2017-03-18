@@ -1,0 +1,8 @@
+ogl_lib = ['/usr/lib/x86_64-linux-gnu', '/usr/lib/x86_64-linux-gnu/mesa']
+common = ['ogl_helper.c']
+
+Program('tri', common + ['tri.c'], LIBS=['GLEW', 'glfw', 'GL'], LIBPATH=ogl_lib)
+Program('subroutine', common + ['subroutine.c'], LIBS=['GLEW', 'glfw', 'GL'], LIBPATH=ogl_lib)
+Program('tnl', ['tnl.cpp'], LIBS=['GLEW', 'glfw', 'GL'], LIBPATH=ogl_lib)
+Program('f20', ['f20.cpp'], LIBS=['GLEW', 'glfw', 'GL'], LIBPATH=ogl_lib)
+Program('tess', ['tess.cpp'], LIBS=['GLEW', 'glfw', 'GL'], LIBPATH=ogl_lib)
