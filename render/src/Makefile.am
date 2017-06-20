@@ -138,3 +138,7 @@ glfw_fb_rendertex_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += glfw_fb_mrt
 glfw_fb_mrt_SOURCES = glfw_fb_mrt.cpp
 glfw_fb_mrt_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += query
+query_SOURCES = query.cpp
+query_CXXFLAGS = $(AM_CXXFLAGS)
