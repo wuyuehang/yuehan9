@@ -62,3 +62,7 @@ es3_scissor_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += es3_blend
 es3_blend_SOURCES = es3_blend.cpp
 es3_blend_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += pbuffer
+pbuffer_SOURCES = pbuffer.c
+pbuffer_CFLAGS = $(AM_CFLAGS)
