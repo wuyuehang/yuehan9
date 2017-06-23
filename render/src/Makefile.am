@@ -142,3 +142,7 @@ glfw_fb_mrt_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += query
 query_SOURCES = query.cpp
 query_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += rendertexture
+rendertexture_SOURCES = rendertexture.c
+rendertexture_CFLAGS = $(AM_CFLAGS)
