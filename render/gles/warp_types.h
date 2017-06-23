@@ -8,6 +8,16 @@
 #include <assert.h>
 #include "utility.h"
 
+#define ONSCREEN_IMAGE	__FILE__".bmp"
+#define ONSCREEN_SURFACE_WIDTH	500
+#define ONSCREEN_SURFACE_HEIGHT	500
+
+#define WARP_MAX_VAO	5
+#define WARP_MAX_VBO	5
+#define WARP_MAX_VS	5
+#define WARP_MAX_FS	5
+#define WARP_MAX_PROG	5
+
 struct warp_runtime {
 	/* X11 stuff */
 	Window x11_win;
@@ -26,7 +36,70 @@ struct warp_runtime {
 	EGLConfig egl_config;
 	EGLint major;
 	EGLint minor;
+
+	/* gles blob */
+	GLuint vao[WARP_MAX_VAO];
+	GLuint vbo[WARP_MAX_VBO];
+	GLuint vertex_shader[WARP_MAX_VS];
+	GLuint fragment_shader[WARP_MAX_FS];
+	GLuint program[WARP_MAX_PROG];
 };
+
+void create_warp_shaders(GLuint *vsidx, char *vspath, GLuint *fsidx, char *fspath)
+{
+	GLchar message[512];
+	GLint status;
+	GLchar *source = NULL;
+
+	if (vspath != NULL) {
+		*vsidx = glCreateShader(GL_VERTEX_SHADER);
+		load_shader_from_file(vspath, &source);
+		glShaderSource(*vsidx, 1, (const GLchar * const*)&source, NULL);
+		glCompileShader(*vsidx);
+
+		glGetShaderiv(*vsidx, GL_COMPILE_STATUS, &status);
+		if (!status) {
+			glGetShaderInfoLog(*vsidx, 512, NULL, message);
+			printf("%s\n", message);
+		}
+		free(source);
+	}
+
+	if (fspath != NULL) {
+		*fsidx = glCreateShader(GL_FRAGMENT_SHADER);
+		load_shader_from_file(fspath, &source);
+		glShaderSource(*fsidx, 1, (const GLchar * const*)&source, NULL);
+		glCompileShader(*fsidx);
+
+		glGetShaderiv(*fsidx, GL_COMPILE_STATUS, &status);
+		if (!status) {
+			glGetShaderInfoLog(*fsidx, 512, NULL, message);
+			printf("%s\n", message);
+		}
+		free(source);
+	}
+}
+
+void create_warp_program(GLuint *vsidx, GLuint *fsidx, GLuint *prog)
+{
+	GLint status;
+	GLchar message[512];
+	assert(*fsidx);
+	assert(*vsidx);
+
+	*prog = glCreateProgram();
+	glAttachShader(*prog, *vsidx);
+	glAttachShader(*prog, *fsidx);
+	glLinkProgram(*prog);
+
+	glGetProgramiv(*prog, GL_LINK_STATUS, &status);
+	if (!status) {
+		glGetProgramInfoLog(*prog, 512, NULL, message);
+		printf("%s\n", message);
+	}
+
+	glUseProgram(*prog);
+}
 
 /* bridge X11 with egl and set up context */
 void create_warp_runtime(struct warp_runtime *wrt)
@@ -38,7 +111,7 @@ void create_warp_runtime(struct warp_runtime *wrt)
 	wrt->x11_win = XCreateWindow(
 			wrt->x11_display,
 			DefaultRootWindow(wrt->x11_display),
-			0, 0, 500, 500, 0,
+			0, 0, ONSCREEN_SURFACE_WIDTH, ONSCREEN_SURFACE_HEIGHT, 0,
 			CopyFromParent, InputOutput,
 			CopyFromParent, CWEventMask,
 			&(wrt->xwin_attrib));
@@ -84,6 +157,19 @@ void create_warp_runtime(struct warp_runtime *wrt)
 	assert(wrt->egl_context != EGL_NO_CONTEXT);
 
 	eglMakeCurrent(wrt->egl_display, wrt->egl_surface, wrt->egl_surface, wrt->egl_context);
+
+	// preamble operations
+	glViewport(0, 0, ONSCREEN_SURFACE_WIDTH, ONSCREEN_SURFACE_HEIGHT);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearDepthf(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// preamble tokens
+	glGenVertexArrays(WARP_MAX_VAO, wrt->vao);
+	glGenBuffers(WARP_MAX_VBO, wrt->vbo);
 }
 
 void destroy_warp_runtime(struct warp_runtime *wrt)
@@ -133,13 +219,15 @@ struct offscreen_warp {
 	EGLDisplay disp;
 	EGLContext ctx;
 	EGLSurface sfc;
-	EGLContext cfg;
+	EGLConfig cfg;
 	EGLint major;
 	EGLint minor;
 	// offscreen gles blob
-	GLuint vertex_shader[2];
-	GLuint fragment_shader[2];
-	GLuint program[2];
+	GLuint vao[WARP_MAX_VAO];
+	GLuint vbo[WARP_MAX_VBO];
+	GLuint vertex_shader[WARP_MAX_VS];
+	GLuint fragment_shader[WARP_MAX_FS];
+	GLuint program[WARP_MAX_PROG];
 };
 
 void create_offscreen_warp(struct offscreen_warp *ow)

@@ -66,3 +66,7 @@ es3_blend_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += pbuffer
 pbuffer_SOURCES = pbuffer.c
 pbuffer_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += rendertexture
+rendertexture_SOURCES = rendertexture.c
+rendertexture_CFLAGS = $(AM_CFLAGS)
