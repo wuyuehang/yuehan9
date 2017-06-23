@@ -9,7 +9,7 @@ int main()
 	struct offscreen_warp *ow;
 	ow = (struct offscreen_warp *)malloc(sizeof(*ow));
 	memset(ow, 0, sizeof(*ow));
-	unsigned char *blob = (unsigned char *)malloc(OFFSCREEN_SURFACE_WIDTH * OFFSCREEN_SURFACE_HEIGHT * 4);
+	unsigned char *blob = (unsigned char *)malloc(WARP_SURFACE_WIDTH * WARP_SURFACE_HEIGHT * 4);
 
 	create_offscreen_warp(ow);
 
@@ -49,11 +49,11 @@ int main()
 	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, (void *)0);
 
 	// dump the image
-	glReadPixels(0, 0, OFFSCREEN_SURFACE_WIDTH, OFFSCREEN_SURFACE_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, blob);
-	SOIL_save_image(OFFSCREEN_IMAGE,
+	glReadPixels(0, 0, WARP_SURFACE_WIDTH, WARP_SURFACE_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, blob);
+	SOIL_save_image(WARP_IMAGE,
 			SOIL_SAVE_TYPE_BMP,
-			OFFSCREEN_SURFACE_WIDTH,
-			OFFSCREEN_SURFACE_HEIGHT,
+			WARP_SURFACE_WIDTH,
+			WARP_SURFACE_HEIGHT,
 			4, blob);
 	destroy_offscreen_warp(ow);
 

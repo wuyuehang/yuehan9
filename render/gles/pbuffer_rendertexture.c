@@ -1,41 +1,42 @@
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "utility.h"
+#include <SOIL/SOIL.h>
 #include "warp_types.h"
 
 #define _draw_depth_texture_only_ 1
-struct warp_runtime *wrt = NULL;
 
-int main(int argc, char **argv)
+int main()
 {
-	wrt = (struct warp_runtime *)malloc(sizeof(struct warp_runtime));
-	memset(wrt, 0, sizeof(struct warp_runtime));
+	struct offscreen_warp *ow;
+	ow = (struct offscreen_warp *)malloc(sizeof(*ow));
+	memset(ow, 0, sizeof(*ow));
+	unsigned char *blob = (unsigned char *)malloc(WARP_SURFACE_WIDTH * WARP_SURFACE_HEIGHT * 4);
 
-	create_warp_runtime(wrt);
+	create_offscreen_warp(ow);
 
-	create_warp_shaders(&wrt->vertex_shader[0], "shaders/simple.vert",
-			&wrt->fragment_shader[0], "shaders/constant.frag");
+	create_offscreen_warp_shaders(ow,
+			&ow->vertex_shader[0], "shaders/simple.vert",
+			&ow->fragment_shader[0], "shaders/constant.frag");
 
-	create_warp_program(&wrt->vertex_shader[0],
-			&wrt->fragment_shader[0],
-			&wrt->program[0]);
+	create_offscreen_warp_program(&ow->vertex_shader[0],
+			&ow->fragment_shader[0],
+			&ow->program[0]);
 
 	GLfloat pos_buf[] = {
-			-0.5, -0.5,
-			 0.5, -0.5,
-			 0.0,  0.5
+		-0.5, -0.5,
+		0.0, 0.5,
+		0.5, -0.5
 	};
 
 	// 1. render the triangle into a texture
-	glBindVertexArray(wrt->vao[0]);
+	glBindVertexArray(ow->vao[0]);
 
-	glBindBuffer(GL_ARRAY_BUFFER, wrt->vbo[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(pos_buf), pos_buf, GL_STATIC_DRAW);
 
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 
 #if !_draw_depth_texture_only_
 	GLuint colorb;
@@ -83,7 +84,6 @@ int main(int argc, char **argv)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 	glDrawArrays(GL_TRIANGLES, 0, 3);
-
 	// 2. sample the texture into quad
 	GLfloat quad_pos_buf[] = {
 		-1.f, 1.f,
@@ -97,23 +97,23 @@ int main(int argc, char **argv)
 		1.0, 0.0,
 	};
 
-	glBindVertexArray(wrt->vao[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, wrt->vbo[1]);
+	glBindVertexArray(ow->vao[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_pos_buf), quad_pos_buf, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, wrt->vbo[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[2]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_uv_buf), quad_uv_buf, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
 
-	create_warp_shaders(&wrt->vertex_shader[1], "shaders/quad.vert",
-			&wrt->fragment_shader[1], "shaders/quad.frag");
+	create_warp_shaders(&ow->vertex_shader[1], "shaders/quad.vert",
+			&ow->fragment_shader[1], "shaders/quad.frag");
 
-	create_warp_program(&wrt->vertex_shader[1],
-			&wrt->fragment_shader[1],
-			&wrt->program[1]);
+	create_warp_program(&ow->vertex_shader[1],
+			&ow->fragment_shader[1],
+			&ow->program[1]);
 
 	glActiveTexture(GL_TEXTURE0);
 #if _draw_depth_texture_only_
@@ -121,32 +121,25 @@ int main(int argc, char **argv)
 #else
 	glBindTexture(GL_TEXTURE_2D, colorb);
 #endif
-	assert(glGetUniformLocation(wrt->program[1], "color2D") != -1);
-	glUniform1i(glGetUniformLocation(wrt->program[1], "color2D"), 0);
+	assert(glGetUniformLocation(ow->program[1], "color2D") != -1);
+	glUniform1i(glGetUniformLocation(ow->program[1], "color2D"), 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	while (1) {
 
-		XNextEvent(wrt->x11_display, &(wrt->event));
+	// draw the pbuffer surface
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearDepthf(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 
-		switch(wrt->event.type) {
-		case Expose:
-			glClearColor(0.0, 0.0, 0.0, 1.0);
-			glClearDepthf(1.0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+	// dump the image
+	glReadPixels(0, 0, WARP_SURFACE_WIDTH, WARP_SURFACE_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, blob);
+	SOIL_save_image(WARP_IMAGE,
+			SOIL_SAVE_TYPE_BMP,
+			WARP_SURFACE_WIDTH,
+			WARP_SURFACE_HEIGHT,
+			4, blob);
+	destroy_offscreen_warp(ow);
 
-			eglSwapBuffers(wrt->egl_display, wrt->egl_surface);
-			break;
-		case ButtonPress:
-		case KeyPress:
-			goto finish;
-		default:
-			break;
-		}
-	}
-
-finish:
-	destroy_warp_runtime(wrt);
 	return 0;
 }

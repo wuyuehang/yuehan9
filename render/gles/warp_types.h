@@ -8,9 +8,9 @@
 #include <assert.h>
 #include "utility.h"
 
-#define ONSCREEN_IMAGE	__FILE__".bmp"
-#define ONSCREEN_SURFACE_WIDTH	500
-#define ONSCREEN_SURFACE_HEIGHT	500
+#define WARP_IMAGE	__FILE__".bmp"
+#define WARP_SURFACE_WIDTH	500
+#define WARP_SURFACE_HEIGHT	500
 
 #define WARP_MAX_VAO	5
 #define WARP_MAX_VBO	5
@@ -111,7 +111,7 @@ void create_warp_runtime(struct warp_runtime *wrt)
 	wrt->x11_win = XCreateWindow(
 			wrt->x11_display,
 			DefaultRootWindow(wrt->x11_display),
-			0, 0, ONSCREEN_SURFACE_WIDTH, ONSCREEN_SURFACE_HEIGHT, 0,
+			0, 0, WARP_SURFACE_WIDTH, WARP_SURFACE_HEIGHT, 0,
 			CopyFromParent, InputOutput,
 			CopyFromParent, CWEventMask,
 			&(wrt->xwin_attrib));
@@ -159,7 +159,7 @@ void create_warp_runtime(struct warp_runtime *wrt)
 	eglMakeCurrent(wrt->egl_display, wrt->egl_surface, wrt->egl_surface, wrt->egl_context);
 
 	// preamble operations
-	glViewport(0, 0, ONSCREEN_SURFACE_WIDTH, ONSCREEN_SURFACE_HEIGHT);
+	glViewport(0, 0, WARP_SURFACE_WIDTH, WARP_SURFACE_HEIGHT);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
@@ -181,9 +181,6 @@ void destroy_warp_runtime(struct warp_runtime *wrt)
 	free(wrt);
 }
 
-#define OFFSCREEN_IMAGE	__FILE__".bmp"
-#define OFFSCREEN_SURFACE_WIDTH	16
-#define OFFSCREEN_SURFACE_HEIGHT	16
 // offscreen EGL config
 EGLint offscrn_conf_attrib[] =
 		{
@@ -209,8 +206,8 @@ EGLint offscrn_ctx_attrib[] =
 // offscreen EGL surface
 EGLint offscrn_surface_attrib[] =
 		{
-			EGL_WIDTH, OFFSCREEN_SURFACE_WIDTH,
-			EGL_HEIGHT, OFFSCREEN_SURFACE_WIDTH,
+			EGL_WIDTH, WARP_SURFACE_WIDTH,
+			EGL_HEIGHT, WARP_SURFACE_WIDTH,
 			EGL_NONE
 		};
 
@@ -249,13 +246,16 @@ void create_offscreen_warp(struct offscreen_warp *ow)
 	eglMakeCurrent(ow->disp, ow->sfc, ow->sfc, ow->ctx);
 
 	// preamble operations
-	glViewport(0, 0, OFFSCREEN_SURFACE_WIDTH, OFFSCREEN_SURFACE_HEIGHT);
+	glViewport(0, 0, WARP_SURFACE_WIDTH, WARP_SURFACE_HEIGHT);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClearDepthf(1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glGenVertexArrays(WARP_MAX_VAO, ow->vao);
+	glGenBuffers(WARP_MAX_VBO, ow->vbo);
 }
 
 void destroy_offscreen_warp(struct offscreen_warp *ow)

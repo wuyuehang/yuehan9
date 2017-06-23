@@ -70,3 +70,7 @@ pbuffer_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += rendertexture
 rendertexture_SOURCES = rendertexture.c
 rendertexture_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += pbuffer_rendertexture
+pbuffer_rendertexture_SOURCES = pbuffer_rendertexture.c
+pbuffer_rendertexture_CFLAGS = $(AM_CFLAGS)
