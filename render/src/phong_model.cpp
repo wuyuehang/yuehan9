@@ -1,14 +1,10 @@
-#include "utility.h"
 #include <assert.h>
 #include <sys/time.h>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-extern GLboolean glewExperimental;
+#include "ogl_warp.h"
 
 GLfloat pos_buf[] = {
 		// top face
@@ -111,142 +107,67 @@ GLfloat normal_buf[] = {
 		1.0f, 0.0f, 0.0f,
 };
 
-void key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
-{
-	if (key & (GLFW_KEY_Q | GLFW_KEY_ESCAPE) && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(win, GL_TRUE);
-}
-
 int main(int argc, char **argv)
 {
-	glfwInit();
+	struct ogl_warp *ow = (struct ogl_warp *)malloc(sizeof(struct ogl_warp));
+	memset(ow, 0, sizeof(*ow));
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	GLFWwindow* win = glfwCreateWindow(500, 500, __FILE__, NULL, NULL);
-	glfwMakeContextCurrent(win);
-	glfwSetKeyCallback(win, key_cb);
-
-	glewExperimental = GL_TRUE;
-	glewInit();
+	create_ogl_warp(ow);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	glViewport(0, 0, 500, 500);
 
-	/* setup vao & vbo */
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	glBindVertexArray(ow->vao[0]);
 
-	GLuint vbo_pos;
-	glGenBuffers(1, &vbo_pos);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
+	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(pos_buf), pos_buf, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
 
-	GLuint vbo_normal;
-	glGenBuffers(1, &vbo_normal);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_normal);
+	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(normal_buf), normal_buf, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
 
-	/* setup shader & program */
-	GLchar message[512];
-	GLint status;
-	GLchar *source = NULL;
+	create_ogl_warp_shaders(&ow->vertex_shaders[0], "shaders/phong.vert",
+			&ow->fragment_shaders[0], "shaders/phong.frag");
 
-	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	load_shader_from_file("shaders/glfw_phong.vert", &source);
-	glShaderSource(vertex_shader, 1, &source, NULL);
-	glCompileShader(vertex_shader);
+	create_ogl_warp_program(ow->vertex_shaders[0],
+			ow->fragment_shaders[0], &ow->programs[0]);
 
-	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
-	if (!status) {
-		glGetShaderInfoLog(vertex_shader, 512, NULL, message);
-		printf("%s\n", message);
-	}
+	create_ogl_warp_shaders(&ow->vertex_shaders[1], "shaders/phong.vert",
+			&ow->fragment_shaders[1], "shaders/simple.frag");
 
-	GLuint fragment_shader[2];
-	fragment_shader[0] = glCreateShader(GL_FRAGMENT_SHADER);
-	free(source);
-	load_shader_from_file("shaders/glfw_phong_cube.frag", &source);
-	glShaderSource(fragment_shader[0], 1, &source, NULL);
-	glCompileShader(fragment_shader[0]);
-
-	glGetShaderiv(fragment_shader[0], GL_COMPILE_STATUS, &status);
-	if (!status) {
-		glGetShaderInfoLog(fragment_shader[0], 512, NULL, message);
-		printf("%s\n", message);
-	}
-
-	fragment_shader[1] = glCreateShader(GL_FRAGMENT_SHADER);
-	free(source);
-	load_shader_from_file("shaders/glfw_phong_light.frag", &source);
-	glShaderSource(fragment_shader[1], 1, &source, NULL);
-	glCompileShader(fragment_shader[1]);
-	free(source);
-
-	glGetShaderiv(fragment_shader[1], GL_COMPILE_STATUS, &status);
-	if (!status) {
-		glGetShaderInfoLog(fragment_shader[1], 512, NULL, message);
-		printf("%s\n", message);
-	}
-
-	GLuint cube_prog = glCreateProgram();
-	glAttachShader(cube_prog, vertex_shader);
-	glAttachShader(cube_prog, fragment_shader[0]);
-	glLinkProgram(cube_prog);
-
-	glGetProgramiv(cube_prog, GL_LINK_STATUS, &status);
-	if (!status) {
-		glGetProgramInfoLog(cube_prog, 512, NULL, message);
-		printf("%s\n", message);
-	}
-
-
-	GLuint light_prog = glCreateProgram();
-	glAttachShader(light_prog, vertex_shader);
-	glAttachShader(light_prog, fragment_shader[1]);
-	glLinkProgram(light_prog);
-
-	glGetProgramiv(light_prog, GL_LINK_STATUS, &status);
-	if (!status) {
-		glGetProgramInfoLog(light_prog, 512, NULL, message);
-		printf("%s\n", message);
-	}
+	create_ogl_warp_program(ow->vertex_shaders[1],
+			ow->fragment_shaders[1], &ow->programs[1]);
 
 	/* sanity check symbol */
 	GLuint model_uni[2];
-	model_uni[0] = glGetUniformLocation(cube_prog, "world");
-	model_uni[1] = glGetUniformLocation(light_prog, "world");
+	model_uni[0] = glGetUniformLocation(ow->programs[0], "world");
+	model_uni[1] = glGetUniformLocation(ow->programs[1], "world");
 	assert(model_uni[0] != -1);
 	assert(model_uni[1] != -1);
 
 	GLuint view_uni[2];
-	view_uni[0] = glGetUniformLocation(cube_prog, "view");
-	view_uni[1] = glGetUniformLocation(light_prog, "view");
+	view_uni[0] = glGetUniformLocation(ow->programs[0], "view");
+	view_uni[1] = glGetUniformLocation(ow->programs[1], "view");
 	assert(view_uni[0] != -1);
 	assert(view_uni[1] != -1);
 
 	GLuint proj_uni[2];
-	proj_uni[0] = glGetUniformLocation(cube_prog, "proj");
-	proj_uni[1] = glGetUniformLocation(light_prog, "proj");
+	proj_uni[0] = glGetUniformLocation(ow->programs[0], "proj");
+	proj_uni[1] = glGetUniformLocation(ow->programs[1], "proj");
 	assert(proj_uni[0] != -1);
 	assert(proj_uni[1] != -1);
 
 	GLuint light_uni;
-	light_uni= glGetUniformLocation(cube_prog, "light_pos");
+	light_uni= glGetUniformLocation(ow->programs[0], "light_pos");
 	assert(light_uni != -1);
 
 	GLuint camera_uni;
-	camera_uni = glGetUniformLocation(cube_prog, "view_pos");
+	camera_uni = glGetUniformLocation(ow->programs[0], "view_pos");
 	assert(camera_uni != -1);
 
 	/* setup unchanged matrixs and vectors */
@@ -260,21 +181,21 @@ int main(int argc, char **argv)
 
 	glm::mat4 proj_mat = glm::perspective(glm::radians(60.0f), 1.0f, 0.01f, 100.0f);
 
-	glUseProgram(cube_prog);
+	glUseProgram(ow->programs[0]);
 	glUniformMatrix4fv(view_uni[0], 1, GL_FALSE, &view_mat[0][0]);
 	glUniformMatrix4fv(proj_uni[0], 1, GL_FALSE, &proj_mat[0][0]);
 	glUniform3fv(camera_uni, 1, &camera_location[0]);
 
-	glUseProgram(light_prog);
+	glUseProgram(ow->programs[1]);
 	glUniformMatrix4fv(view_uni[1], 1, GL_FALSE, &view_mat[0][0]);
 	glUniformMatrix4fv(proj_uni[1], 1, GL_FALSE, &proj_mat[0][0]);
 
 	/* game loop */
-	while (!glfwWindowShouldClose(win))
+	while (!glfwWindowShouldClose(ow->win))
 	{
 		glfwPollEvents();
-		glfwSwapBuffers(win);
-		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+		glClearColor(0.05, 0.05, 0.05, 1.0);
+		glClearDepthf(1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		/* calculate time delta */
@@ -292,8 +213,10 @@ int main(int argc, char **argv)
 		glm::mat4 rotate_mat = glm::rotate(glm::mat4(1.0f), glm::radians(gap), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 translate_mat = translate(glm::vec3(2.0f, 0.0f, 0.0f));
 		glm::mat4 model_mat = rotate_mat * translate_mat * scale_mat;
-		glUseProgram(light_prog);
+
+		glUseProgram(ow->programs[1]);
 		glUniformMatrix4fv(model_uni[0], 1, GL_FALSE, &model_mat[0][0]);
+		glUniform4f(glGetUniformLocation(ow->programs[1], "uColor"), 8.0f, 8.0f, 0.0f, 1.0f);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		light_location = glm::mat3(rotate_mat) * light_location;
@@ -302,22 +225,14 @@ int main(int argc, char **argv)
 		rotate_mat = glm::mat4(1.0f);
 		model_mat = rotate_mat * scale_mat;
 
-		glUseProgram(cube_prog);
+		glUseProgram(ow->programs[0]);
 
 		glUniform3fv(light_uni, 1, &light_location[0]);
 		glUniformMatrix4fv(model_uni[0], 1, GL_FALSE, &model_mat[0][0]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glfwSwapBuffers(ow->win);
 	}
 
-	/* cleanup */
-	glDeleteShader(vertex_shader);
-	glDeleteShader(fragment_shader[0]);
-	glDeleteShader(fragment_shader[1]);
-	glDeleteProgram(cube_prog);
-	glDeleteProgram(light_prog);
-	glDeleteBuffers(1, &vbo_pos);
-	glDeleteBuffers(1, &vbo_normal);
-	glDeleteVertexArrays(1, &vao);
 	glfwTerminate();
 
 	return 0;

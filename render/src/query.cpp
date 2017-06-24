@@ -1,80 +1,25 @@
-#include <stdio.h>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <assert.h>
-
+#include "ogl_warp.h"
 #include "utility.h"
 
-extern GLboolean glewExperimental;
-
-GLuint g_program;
-GLuint g_vao;
-GLuint g_vbo;
 GLuint g_uni;
 GLuint g_qry;
 GLuint g_time_qry;
 
-static void error_cb(int error, const char* description)
+int main(int argc, char **argv)
 {
-	fputs(description, stderr);
-	fputs("\n", stderr);
-}
+	struct ogl_warp *ow = (struct ogl_warp *)malloc(sizeof(struct ogl_warp));
+	memset(ow, 0, sizeof(*ow));
 
-void key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
-{
-	if ((key & GLFW_KEY_ESCAPE) && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(win, GL_TRUE);
-}
+	create_ogl_warp(ow);
 
-void compile_shader(void)
-{
-	GLuint vertex_shader;
-	GLuint fragment_shader;
-	GLint status;
-	GLchar *source;
-	GLchar message[512];
+	create_ogl_warp_shaders(&ow->vertex_shaders[0], "shaders/simple.vert",
+			&ow->fragment_shaders[0], "shaders/simple.frag");
 
-	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	load_shader_from_file("shaders/simple.vert", &source);
-	glShaderSource(vertex_shader, 1, &source, NULL);
-	glCompileShader(vertex_shader);
+	create_ogl_warp_program(ow->vertex_shaders[0],
+			ow->fragment_shaders[0], &ow->programs[0]);
 
-	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
-	if (!status) {
-		glGetShaderInfoLog(vertex_shader, 512, NULL, message);
-		printf("%s\n", message);
-	}
-
-	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	free(source);
-	load_shader_from_file("shaders/simple.frag", &source);
-	glShaderSource(fragment_shader, 1, &source, NULL);
-	glCompileShader(fragment_shader);
-
-	glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &status);
-	if (!status) {
-		glGetShaderInfoLog(fragment_shader, 512, NULL, message);
-		printf("%s\n", message);
-	}
-
-	g_program = glCreateProgram();
-	glAttachShader(g_program, vertex_shader);
-	glAttachShader(g_program, fragment_shader);
-	glLinkProgram(g_program);
-
-	glGetProgramiv(g_program, GL_LINK_STATUS, &status);
-	if (!status) {
-		glGetProgramInfoLog(g_program, 512, NULL, message);
-		printf("%s\n", message);
-	}
-
-	glUseProgram(g_program);
-	glDeleteShader(vertex_shader);
-	glDeleteShader(fragment_shader);
-}
-
-void create_resource(void)
-{
+	// preamble resource
 	GLfloat vb_pos[] = {
 			// red tri
 			-0.5f, -0.5f, 0.3f,
@@ -94,48 +39,13 @@ void create_resource(void)
 			0.0f, -0.5f, 0.5f,
 	};
 
-	glGenVertexArrays(1, &g_vao);
-	glBindVertexArray(g_vao);
+	glBindVertexArray(ow->vao[0]);
 
-	glGenBuffers(1, &g_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vb_pos), vb_pos, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glBindVertexArray(0);
-}
-
-int main(int argc, char **argv)
-{
-	int width, height;
-
-	glfwSetErrorCallback(error_cb);
-
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-	GLFWwindow* win = glfwCreateWindow(16, 16, __FILE__, NULL, NULL);
-
-	glfwMakeContextCurrent(win);
-
-	glfwSetKeyCallback(win, key_cb);
-
-	glewExperimental = GL_TRUE;
-	glewInit();
-
-	glfwGetFramebufferSize(win, &width, &height);
-	glViewport(0, 0, width, height);
-
-	compile_shader();
-
-	create_resource();
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -148,8 +58,7 @@ int main(int argc, char **argv)
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-		glBindVertexArray(g_vao);
-		g_uni = glGetUniformLocation(g_program, "uColor");
+		g_uni = glGetUniformLocation(ow->programs[0], "uColor");
 		assert(g_uni != 0xFFFFFFFF);
 
 		GLint result;
@@ -206,8 +115,6 @@ int main(int argc, char **argv)
 		printf("time elapsed, result %d\n", result);
 	}
 
-	glDeleteVertexArrays(1, &g_vao);
-	glDeleteBuffers(1, &g_vbo);
 	glfwTerminate();
 
 	return 0;

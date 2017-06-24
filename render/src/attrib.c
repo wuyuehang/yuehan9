@@ -1,6 +1,7 @@
 #include "ogl_warp.h"
 
 #define separate_per_vertex_data 1
+#define _enable_scissor_test_ 0
 
 int main()
 {
@@ -14,6 +15,11 @@ int main()
 
 	create_ogl_warp_program(ow->vertex_shaders[0],
 			ow->fragment_shaders[0], &ow->programs[0]);
+
+#if _enable_scissor_test_
+	glEnable(GL_SCISSOR_TEST);
+	glScissor(0, 0, 250, 250);
+#endif
 
 #if separate_per_vertex_data
 	// separate per vertex data
