@@ -13,6 +13,14 @@
 #define OGL_MAX_PROG	8
 #define OGL_WIN_WIDTH	500
 #define OGL_WIN_HEIGHT	500
+#define _ogl_enable_debug_ 1
+
+void dbg_callback(GLenum source, GLenum type, GLuint id,
+		GLenum severity, GLsizei lenghth,
+		const GLchar *message, void *userParam)
+{
+	printf("(%d): %s\n", id, message);
+}
 
 static void ogl_error_cb(int error, const char* description)
 {
@@ -45,6 +53,9 @@ void create_ogl_warp(struct ogl_warp *ow)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+#if _ogl_enable_debug_
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+#endif
 
 	ow->win = glfwCreateWindow(OGL_WIN_WIDTH, OGL_WIN_HEIGHT, __FILE__, NULL, NULL);
 
@@ -55,6 +66,12 @@ void create_ogl_warp(struct ogl_warp *ow)
 	glewExperimental = GL_TRUE;
 	glewInit();
 
+#if _ogl_enable_debug_
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(dbg_callback, NULL);
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE,
+			GL_DONT_CARE, 0, NULL, GL_TRUE);
+#endif
 	glViewport(0, 0, OGL_WIN_WIDTH, OGL_WIN_HEIGHT);
 
 	glGenVertexArrays(OGL_MAX_VAO, ow->vao);
