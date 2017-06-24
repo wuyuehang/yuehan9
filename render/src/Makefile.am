@@ -146,3 +146,7 @@ query_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += rendertexture
 rendertexture_SOURCES = rendertexture.c
 rendertexture_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += attrib
+attrib_SOURCES = attrib.c
+attrib_CFLAGS = $(AM_CFLAGS)
