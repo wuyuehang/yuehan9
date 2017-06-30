@@ -74,3 +74,7 @@ rendertexture_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += pbuffer_rendertexture
 pbuffer_rendertexture_SOURCES = pbuffer_rendertexture.c
 pbuffer_rendertexture_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += shared_context
+shared_context_SOURCES = shared_context.c
+shared_context_CFLAGS = $(AM_CFLAGS)
