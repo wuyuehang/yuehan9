@@ -55,3 +55,7 @@ attrib_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += instance
 instance_SOURCES = instance.cpp
 instance_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += perspective_correct
+perspective_correct_SOURCES = perspective_correct.cpp
+perspective_correct_CXXFLAGS = $(AM_CXXFLAGS)
