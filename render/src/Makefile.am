@@ -67,3 +67,7 @@ draw_xfb_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += separate_shader_obj
 separate_shader_obj_SOURCES = separate_shader_obj.c
 separate_shader_obj_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += fragcord
+fragcord_SOURCES = fragcord.c
+fragcord_CFLAGS = $(AM_CFLAGS)
