@@ -59,3 +59,7 @@ instance_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += perspective_correct
 perspective_correct_SOURCES = perspective_correct.cpp
 perspective_correct_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += draw_xfb
+draw_xfb_SOURCES = draw_xfb.c
+draw_xfb_CFLAGS = $(AM_CFLAGS)

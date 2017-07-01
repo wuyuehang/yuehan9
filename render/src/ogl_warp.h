@@ -120,7 +120,10 @@ void create_ogl_warp_program(GLuint vidx, GLuint fidx, GLuint *prog)
 
 	*prog = glCreateProgram();
 	glAttachShader(*prog, vidx);
-	glAttachShader(*prog, fidx);
+
+	if (fidx) {
+		glAttachShader(*prog, fidx);
+	}
 	glLinkProgram(*prog);
 
 	glGetProgramiv(*prog, GL_LINK_STATUS, &status);
