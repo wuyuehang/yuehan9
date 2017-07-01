@@ -63,3 +63,7 @@ perspective_correct_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += draw_xfb
 draw_xfb_SOURCES = draw_xfb.c
 draw_xfb_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += separate_shader_obj
+separate_shader_obj_SOURCES = separate_shader_obj.c
+separate_shader_obj_CFLAGS = $(AM_CFLAGS)
