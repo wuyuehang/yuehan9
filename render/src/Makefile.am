@@ -71,3 +71,7 @@ separate_shader_obj_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += fragcord
 fragcord_SOURCES = fragcord.c
 fragcord_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += stencil
+stencil_SOURCES = stencil.c
+stencil_CFLAGS = $(AM_CFLAGS)
