@@ -75,3 +75,7 @@ fragcord_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += stencil
 stencil_SOURCES = stencil.c
 stencil_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += indirect
+indirect_SOURCES = indirect.c
+indirect_CFLAGS = $(AM_CFLAGS)
