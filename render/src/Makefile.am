@@ -79,3 +79,7 @@ stencil_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += indirect
 indirect_SOURCES = indirect.c
 indirect_CFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += skybox
+skybox_SOURCES = skybox.cpp
+skybox_CXXFLAGS = $(AM_CXXFLAGS)
