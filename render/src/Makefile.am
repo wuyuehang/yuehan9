@@ -83,3 +83,7 @@ indirect_CFLAGS = $(AM_CFLAGS)
 bin_PROGRAMS += skybox
 skybox_SOURCES = skybox.cpp
 skybox_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += perspective_tune
+perspective_tune_SOURCES = perspective_tune.cpp
+perspective_tune_CXXFLAGS = $(AM_CXXFLAGS)
