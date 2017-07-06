@@ -9,6 +9,7 @@ uniform mat4 uProj;
 
 void main()
 {
-	gl_Position = uProj * uView * vin_Pos;
+	vec4 raw_position = uProj * uView * vin_Pos;
+	gl_Position = raw_position.xyww;
 	fin_CubeCoord = vin_Pos.xyz;
 }

@@ -84,7 +84,7 @@ int main()
 	glfwSetKeyCallback(ow->win, skybox_key_cb);
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	glDepthFunc(GL_LEQUAL); // optimize for last draw of skybox
 
 	// 1. set up resource for the object
 	create_ogl_warp_shaders(&ow->vertex_shaders[0], "shaders/environment.vert",
@@ -162,27 +162,11 @@ int main()
 	while (!glfwWindowShouldClose(ow->win))
 	{
 		glfwPollEvents();
-		glClearColor(0.05, 0.05, 0.05, 1.0);
+		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClearDepthf(1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// 1. render the skybox in the background
-		glDepthMask(GL_FALSE);
-
-		glBindVertexArray(ow->vao[1]);
-		glUseProgram(ow->programs[1]);
-
-		glm::mat4 skybox_view_mat = glm::lookAt(
-				glm::vec3(0, 0, 0),
-				glm::vec3(cos(vAngle)*cos(hAngle), sin(vAngle)*cos(hAngle), sin(hAngle)),
-				glm::vec3(0, 1, 0)
-		);
-
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[1], "uView"), 1, GL_FALSE, &skybox_view_mat[0][0]);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, (void *)0);
-		glDepthMask(GL_TRUE);
-
-		// 2. render the object in the skybox
+		// 1. render the object in the skybox
 		struct timeval tv;
 		gettimeofday(&tv, NULL);
 		static long int startup = 0;
@@ -202,6 +186,21 @@ int main()
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
+		// 2. render the skybox in the background
+		glDepthMask(GL_FALSE);
+
+		glBindVertexArray(ow->vao[1]);
+		glUseProgram(ow->programs[1]);
+
+		glm::mat4 skybox_view_mat = glm::lookAt(
+				glm::vec3(0, 0, 0),
+				glm::vec3(cos(vAngle)*cos(hAngle), sin(vAngle)*cos(hAngle), sin(hAngle)),
+				glm::vec3(0, 1, 0)
+		);
+
+		glUniformMatrix4fv(glGetUniformLocation(ow->programs[1], "uView"), 1, GL_FALSE, &skybox_view_mat[0][0]);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, (void *)0);
+		glDepthMask(GL_TRUE);
 		glfwSwapBuffers(ow->win);
 	}
 

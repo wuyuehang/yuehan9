@@ -80,7 +80,7 @@ int main()
 		ow->fragment_shaders[0], &ow->programs[0]);
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	glDepthFunc(GL_LEQUAL); // optimize for last draw of skybox
 
 	glBindVertexArray(ow->vao[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[0]);
