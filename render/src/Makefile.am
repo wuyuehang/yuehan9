@@ -87,3 +87,7 @@ skybox_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += perspective_tune
 perspective_tune_SOURCES = perspective_tune.cpp
 perspective_tune_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += environment
+environment_SOURCES = environment.cpp
+environment_CXXFLAGS = $(AM_CXXFLAGS)
