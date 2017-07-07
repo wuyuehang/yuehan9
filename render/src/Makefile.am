@@ -16,10 +16,6 @@ bin_PROGRAMS += glfw_gs_point2triangle
 glfw_gs_point2triangle_SOURCES = glfw_gs_point2triangle.c
 glfw_gs_point2triangle_CFLAGS = $(AM_CFLAGS)
 
-bin_PROGRAMS += glfw_vs_feedback_point
-glfw_vs_feedback_point_SOURCES = glfw_vs_feedback_point.cpp
-glfw_vs_feedback_point_CXXFLAGS = $(AM_CXXFLAGS)
-
 bin_PROGRAMS += dual_vao
 dual_vao_SOURCES = dual_vao.cpp
 dual_vao_CXXFLAGS = $(AM_CXXFLAGS)
