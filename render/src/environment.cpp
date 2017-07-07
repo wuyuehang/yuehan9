@@ -7,8 +7,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "ogl_warp.h"
 
+#define _animate_object_ 1
+
 static float vAngle = 0.0;
 static float hAngle = 0.0;
+static float oRefractionRatio = 1.0 / 1.52;
+static bool oFlipMode = GL_FALSE;
 
 void skybox_key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
 {
@@ -27,9 +31,19 @@ void skybox_key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
 	if ((key == GLFW_KEY_W) && action == GLFW_PRESS)
 		vAngle += 0.1;
 
-	if ((key == GLFW_KEY_SPACE) && action == GLFW_PRESS) {
+	if ((key == GLFW_KEY_UP) && action == GLFW_PRESS)
+		oRefractionRatio += 0.05;
+
+	if ((key == GLFW_KEY_DOWN) && action == GLFW_PRESS)
+		oRefractionRatio -= 0.05;
+
+	if ((key == GLFW_KEY_SPACE) && action == GLFW_PRESS)
+		oFlipMode = !oFlipMode;
+
+	if ((key == GLFW_KEY_R) && action == GLFW_PRESS) {
 		vAngle = 0;
 		hAngle = 0;
+		oRefractionRatio = 1.0 / 1.52;
 	}
 }
 
@@ -184,6 +198,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// 1. render the object in the skybox
+#if _animate_object_
 		struct timeval tv;
 		gettimeofday(&tv, NULL);
 		static long int startup = 0;
@@ -191,15 +206,22 @@ int main()
 		if (0 == startup)
 			startup = tv.tv_sec * 1000000 + tv.tv_usec;
 		float gap = (tv.tv_sec * 1000000 + tv.tv_usec - startup) / 10000.0f;
+#endif
 
 		glBindVertexArray(ow->vao[0]);
 		glUseProgram(ow->programs[0]);
 
+		glUniform1i(glGetUniformLocation(ow->programs[0], "uIsRefractionMode"), oFlipMode);
+		glUniform1f(glGetUniformLocation(ow->programs[0], "uRefractionRatio"), oRefractionRatio);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
 		glActiveTexture(GL_TEXTURE0);
 		glUniform1i(glGetUniformLocation(ow->programs[0], "uCubeTetxure"), 0);
 
+#if _animate_object_
 		model_mat = glm::rotate(glm::mat4(1.0), glm::radians(gap), glm::vec3(0.0, 1.0, 0.0));
+#else
+		model_mat = glm::mat4(1.0);
+#endif
 
 		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uModel"), 1, GL_FALSE, &model_mat[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uView"), 1, GL_FALSE, &view_mat[0][0]);
