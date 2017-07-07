@@ -46,16 +46,16 @@ void skybox_key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
 	if ((key & GLFW_KEY_ESCAPE) && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(win, GL_TRUE);
 
-	if ((key == GLFW_KEY_A) && action == GLFW_PRESS)
+	if ((key == GLFW_KEY_A) && action != GLFW_RELEASE)
 		hAngle -= 0.1;
 
-	if ((key == GLFW_KEY_D) && action == GLFW_PRESS)
+	if ((key == GLFW_KEY_D) && action != GLFW_RELEASE)
 		hAngle += 0.1;
 
-	if ((key == GLFW_KEY_S) && action == GLFW_PRESS)
+	if ((key == GLFW_KEY_S) && action != GLFW_RELEASE)
 		vAngle -= 0.1;
 
-	if ((key == GLFW_KEY_W) && action == GLFW_PRESS)
+	if ((key == GLFW_KEY_W) && action != GLFW_RELEASE)
 		vAngle += 0.1;
 
 	if ((key == GLFW_KEY_SPACE) && action == GLFW_PRESS) {
