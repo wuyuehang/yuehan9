@@ -34,12 +34,21 @@ void skybox_key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
 }
 
 GLfloat obj[] = {
-	-0.6, 0.6,
-	0.6, 0.6,
-	0.6, -0.6,
-	-0.6, 0.6,
-	0.6, -0.6,
-	-0.6, -0.6
+	-0.8, 0.8,
+	0.8, 0.8,
+	0.8, -0.8,
+	-0.8, 0.8,
+	0.8, -0.8,
+	-0.8, -0.8
+};
+
+GLfloat normal[] = {
+	0.0, 0.0, 1.0,
+	0.0, 0.0, 1.0,
+	0.0, 0.0, 1.0,
+	0.0, 0.0, 1.0,
+	0.0, 0.0, 1.0,
+	0.0, 0.0, 1.0
 };
 
 GLfloat skybox[] = {
@@ -97,8 +106,11 @@ int main()
 
 	glm::mat4 proj_mat = glm::perspective(glm::radians(60.0f), 1.0f, 0.01f, 100.0f);
 
+	glm::vec3 camera_loc = glm::vec3(-2, 0, -2);
+	glUniform3fv(glGetUniformLocation(ow->programs[0], "uCameraLoc"), 1, &camera_loc[0]);
+
 	glm::mat4 view_mat = glm::lookAt(
-			glm::vec3(-2, 1, 4),
+			camera_loc,
 			glm::vec3(0, 0, 0),
 			glm::vec3(0, 1, 0)
 	);
@@ -108,6 +120,11 @@ int main()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(obj), obj, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLvoid *)0);
 	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[3]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(normal), normal, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLvoid *)0);
+	glEnableVertexAttribArray(1);
 
 	// 2. set up resource for the skybox
 	create_ogl_warp_shaders(&ow->vertex_shaders[1], "shaders/skybox.vert",
@@ -177,6 +194,10 @@ int main()
 
 		glBindVertexArray(ow->vao[0]);
 		glUseProgram(ow->programs[0]);
+
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+		glActiveTexture(GL_TEXTURE0);
+		glUniform1i(glGetUniformLocation(ow->programs[0], "uCubeTetxure"), 0);
 
 		model_mat = glm::rotate(glm::mat4(1.0), glm::radians(gap), glm::vec3(0.0, 1.0, 0.0));
 
