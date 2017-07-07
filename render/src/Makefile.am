@@ -87,3 +87,7 @@ perspective_tune_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += environment
 environment_SOURCES = environment.cpp
 environment_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += point_light
+point_light_SOURCES = point_light.cpp
+point_light_CXXFLAGS = $(AM_CXXFLAGS)
