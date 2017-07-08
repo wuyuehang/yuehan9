@@ -91,3 +91,7 @@ environment_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += point_light
 point_light_SOURCES = point_light.cpp
 point_light_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += spot_light
+spot_light_SOURCES = spot_light.cpp
+spot_light_CXXFLAGS = $(AM_CXXFLAGS)
