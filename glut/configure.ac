@@ -46,6 +46,7 @@ PKG_CHECK_MODULES(X11, [x11])
 PKG_CHECK_MODULES(GL, [gl])
 PKG_CHECK_MODULES(GLU, [glu])
 PKG_CHECK_MODULES(GLEW, [glew])
+PKG_CHECK_MODULES(ASSIMP, [assimp])
 
 dnl compile with debug symbols
 AC_ARG_ENABLE(debug,
