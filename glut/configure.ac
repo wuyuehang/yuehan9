@@ -44,11 +44,8 @@ XORG_DEFAULT_OPTIONS
 
 PKG_CHECK_MODULES(X11, [x11])
 PKG_CHECK_MODULES(GL, [gl])
-# PKG_CHECK_MODULES(GLU, [glu])
-PKG_CHECK_MODULES(GLFW3, [glfw3])
+PKG_CHECK_MODULES(GLU, [glu])
 PKG_CHECK_MODULES(GLEW, [glew])
-PKG_CHECK_MODULES(EGL, [egl])
-PKG_CHECK_MODULES(GLES, [glesv2])
 
 dnl compile with debug symbols
 AC_ARG_ENABLE(debug,
@@ -59,10 +56,10 @@ AC_ARG_ENABLE(debug,
 if test "x$DEBUG" = "xyes"; then
 	AC_DEFINE(ENABLE_DEBUG,1,[Enable all debugging])
 	CFLAGS="-O0 -ggdb3"
+	CXXFLAGS="-O0 -ggdb3"
 fi
 
 AC_OUTPUT([
 	Makefile
-	gles/Makefile
 	src/Makefile
 ])
