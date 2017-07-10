@@ -2,7 +2,7 @@ bin_PROGRAMS =
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CXXFLAGS = $(GXX_CFLAGS)
-LDADD = @X11_LIBS@ @GLFW3_LIBS@ @GLEW_LIBS@ -lm -lSOIL
+LDADD = @X11_LIBS@ @GLFW3_LIBS@ @GLEW_LIBS@ @ASSIMP_LIBS@ -lm -lSOIL
 
 bin_PROGRAMS += texture2d
 texture2d_SOURCES = texture2d.cpp
@@ -95,3 +95,7 @@ point_light_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += spot_light
 spot_light_SOURCES = spot_light.cpp
 spot_light_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += model
+model_SOURCES = model.cpp
+model_CXXFLAGS = $(AM_CXXFLAGS)

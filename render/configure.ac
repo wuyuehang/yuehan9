@@ -49,6 +49,7 @@ PKG_CHECK_MODULES(GLFW3, [glfw3])
 PKG_CHECK_MODULES(GLEW, [glew])
 PKG_CHECK_MODULES(EGL, [egl])
 PKG_CHECK_MODULES(GLES, [glesv2])
+PKG_CHECK_MODULES(ASSIMP, [assimp])
 
 dnl compile with debug symbols
 AC_ARG_ENABLE(debug,

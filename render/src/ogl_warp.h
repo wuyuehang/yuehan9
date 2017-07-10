@@ -11,8 +11,8 @@
 #define OGL_MAX_VS	8
 #define OGL_MAX_FS	8
 #define OGL_MAX_PROG	8
-#define OGL_WIN_WIDTH	800
-#define OGL_WIN_HEIGHT	800
+#define OGL_WIN_WIDTH	1280
+#define OGL_WIN_HEIGHT	1024
 #define _ogl_enable_debug_ 1
 
 void dbg_callback(GLenum source, GLenum type, GLuint id,
