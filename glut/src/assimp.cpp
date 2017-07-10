@@ -166,10 +166,6 @@ int main(int argc, char **argv)
 
 	glViewport(0, 0, WIDTH, HEIGHT);
 
-	GLuint VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
 	pMeshContainer = new Mesh();
 
 	pMeshContainer->LoadMesh("objs/stormtrooper.obj");
