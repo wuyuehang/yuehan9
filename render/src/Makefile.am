@@ -99,3 +99,7 @@ spot_light_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += model
 model_SOURCES = model.cpp
 model_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += model2
+model2_SOURCES = model2.cpp
+model2_CXXFLAGS = $(AM_CXXFLAGS)
