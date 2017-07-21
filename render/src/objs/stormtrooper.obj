@@ -1,7 +1,7 @@
 # 
 # 
-mtllib Stormtrooper.mtl
-o Stormtrooper
+mtllib stormtrooper.mtl
+o stormtrooper
 v -0.544744 2.718269 -0.216881
 v -0.461653 2.697798 -0.246883
 v -0.475583 2.689369 -0.242275
@@ -11205,7 +11205,7 @@ vn 0.355500 -0.192600 -0.914600
 vn 0.204700 -0.341400 -0.917300
 vn 0.000200 -0.395400 -0.918500
 vn -0.204700 -0.341700 -0.917200
-usemtl Stormtrooper
+usemtl stormtrooper
 s 1
 f 1/1/1 2/2/2 3/3/3
 f 2/2/2 1/1/1 4/4/4

@@ -103,3 +103,7 @@ model_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += model2
 model2_SOURCES = model2.cpp
 model2_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += model3
+model3_SOURCES = model3.cpp
+model3_CXXFLAGS = $(AM_CXXFLAGS)

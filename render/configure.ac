@@ -60,6 +60,7 @@ AC_ARG_ENABLE(debug,
 if test "x$DEBUG" = "xyes"; then
 	AC_DEFINE(ENABLE_DEBUG,1,[Enable all debugging])
 	CFLAGS="-O0 -ggdb3"
+	CXXFLAGS="-std=c++11 -O0 -ggdb3"
 fi
 
 AC_OUTPUT([

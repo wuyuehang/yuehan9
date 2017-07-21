@@ -34,6 +34,7 @@ public:
 	static void OnKeyboard(GLFWwindow*, int, int, int, int);
 	GLuint BuildShaderProgram(const char *filename, GLenum type);
 	GLuint BuildProgramPipeline();
+	void UpdateKeyboardCB(GLFWkeyfun);
 	void OnRender();
 
 private:
@@ -57,6 +58,11 @@ void GlRunner::OnKeyboard(GLFWwindow* win, int key, int scancode, int action, in
 		glfwSetWindowShouldClose(win, GL_TRUE);
 }
 
+void GlRunner::UpdateKeyboardCB(GLFWkeyfun kbf)
+{
+	glfwSetKeyCallback(this->_win, kbf);
+}
+
 void GlRunner::InitWindonw()
 {
 	glfwInit();
@@ -70,7 +76,7 @@ void GlRunner::InitWindonw()
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 #endif
 
-	this->_win = glfwCreateWindow(GR_WIDTH, GR_HEIGHT, __FILE__, NULL, NULL);
+	this->_win = glfwCreateWindow(GR_WIDTH, GR_HEIGHT, __FILE__, nullptr, nullptr);
 
 	glfwMakeContextCurrent(this->_win);
 

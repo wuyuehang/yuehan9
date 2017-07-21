@@ -1,12 +1,15 @@
 #ifndef MESH_LOADER_H
 #define MESH_LOADER_H
 
+#include <SOIL/SOIL.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <glm/glm.hpp>
 #include <vector>
 #include <iostream>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 #define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices)
 
@@ -15,11 +18,35 @@ struct Vertex
 {
 	glm::vec3 m_pos;
 	glm::vec3 m_normal;
+	glm::vec2 m_texc;
 
 	Vertex(const glm::vec3& pos, const glm::vec3& normal)
 	{
 		m_pos = pos;
 		m_normal = normal;
+	}
+
+	Vertex(const glm::vec3& pos, const glm::vec3& normal, const glm::vec2& texc)
+	{
+		m_pos = pos;
+		m_normal = normal;
+		m_texc = texc;
+	}
+};
+
+// warp material texture info
+struct TextureEntry
+{
+	GLuint m_TID;
+	std::string m_filename;
+	std::string m_name;	// diffuse, specular, bump or ambient etc
+
+	TextureEntry() {}
+	TextureEntry(GLuint tid, const std::string& filename, const std::string& name)
+	{
+		m_TID = tid;
+		m_filename = filename;
+		m_name= name;
 	}
 };
 
@@ -33,6 +60,13 @@ public:
 		void InitMesh(unsigned int idx, const aiMesh *paiMesh);
 		void RenderMesh();
 
+		enum {
+			Material_Diffuse,
+			Material_Specular,
+			Material_Ambient,
+			Material_Max
+		};
+
 		struct MeshEntry {
 			void Init(const std::vector<Vertex>& Vertices,
 					const std::vector<unsigned int>& Indices);
@@ -40,9 +74,11 @@ public:
 			GLuint m_IB;
 			GLuint m_VA;
 			unsigned int m_NumIndices;
+			TextureEntry m_TXE[Material_Max];	// store per mesh entry texture
 		};
 
 		std::vector<MeshEntry> m_Entries;
+		std::vector<TextureEntry> m_TextureEntries;	// store non duplicate texture objects
 };
 
 void Mesh::LoadMesh(const std::string& file)
@@ -61,6 +97,53 @@ void Mesh::LoadMesh(const std::string& file)
 		const aiMesh *paiMesh = pScene->mMeshes[i];
 		InitMesh(i, paiMesh);
 	}
+
+	for (int i = 0; i < pScene->mNumMeshes; i++) {
+		// per mesh entry init materials, assume one on one map per entry and per property
+		const aiMesh *paiMesh = pScene->mMeshes[i];
+		aiMaterial *paiMaterial = pScene->mMaterials[paiMesh->mMaterialIndex];
+
+		assert(paiMaterial->GetTextureCount(aiTextureType_DIFFUSE) == 1);
+
+		aiString filename;
+		paiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &filename);
+
+		// search if it duplicate
+		bool duplicate = false;
+
+		for (int j = 0; j < m_TextureEntries.size(); j++) {
+			if (std::strcmp(m_TextureEntries[j].m_filename.c_str(), filename.C_Str())) {
+				duplicate = true;
+				break;
+			}
+		}
+
+		if (!duplicate) {
+			// first time create, filename contains not full directory information
+			std::string path = std::string(filename.C_Str());
+			path = "objs/" + path;
+			std::cout << "texture full path: " << path << std::endl;
+
+			GLuint textureID;
+			glGenTextures(1, &textureID);
+
+			int w, h, c;
+			unsigned char *img = SOIL_load_image(path.c_str(), &w, &h, &c, SOIL_LOAD_RGBA);
+
+			glBindTexture(GL_TEXTURE_2D, textureID);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
+			SOIL_free_image_data(img);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			TextureEntry tex(textureID, std::string(filename.C_Str()), std::string());
+
+			// update
+			this->m_Entries[i].m_TXE[Material_Diffuse] = tex;
+			this->m_TextureEntries.push_back(tex);
+		}
+	}
 }
 
 void Mesh::InitMesh(unsigned int idx, const aiMesh *paiMesh) {
@@ -75,9 +158,11 @@ void Mesh::InitMesh(unsigned int idx, const aiMesh *paiMesh) {
 	for (int i = 0; i < paiMesh->mNumVertices; i++) {
 		const aiVector3D *pPos = &(paiMesh->mVertices[i]);
 		const aiVector3D *pNormal = &(paiMesh->mNormals[i]);
+		const aiVector3D *pTexc = &(paiMesh->mTextureCoords[0][i]);
 
 		Vertex v(glm::vec3(pPos->x, pPos->y, pPos->z),
-				glm::vec3(pNormal->x, pNormal->y, pNormal->z));
+				glm::vec3(pNormal->x, pNormal->y, pNormal->z),
+				glm::vec2(pTexc->x, pTexc->y));
 
 		Vertices.push_back(v);
 	}
@@ -111,8 +196,18 @@ void Mesh::RenderMesh()
 		// attribute 1 store normal
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)12);
 		glEnableVertexAttribArray(1);
+
+		// attribute 2 store texc
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)24);
+		glEnableVertexAttribArray(2);
+
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Entries[i].m_IB);
 
+		// texture unit 0 store diffuse
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_Entries[i].m_TXE[Material_Diffuse].m_TID);
+
+		// uniform diffuse texture outside
 		glDrawElements(GL_TRIANGLES, m_Entries[i].m_NumIndices, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
