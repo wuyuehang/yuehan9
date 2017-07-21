@@ -49,7 +49,7 @@ int main()
 
 	Mesh *pMeshContainer = new Mesh();
 
-	pMeshContainer->LoadMesh("objs/stormtrooper.obj");
+	pMeshContainer->LoadMesh("objs/lantern.obj");
 
 	while (!glfwWindowShouldClose(ow->win)) {
 		glfwPollEvents();

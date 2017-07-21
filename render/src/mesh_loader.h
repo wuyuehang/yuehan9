@@ -79,6 +79,7 @@ public:
 
 		std::vector<MeshEntry> m_Entries;
 		std::vector<TextureEntry> m_TextureEntries;	// store non duplicate texture objects
+		bool m_hasMaterial;
 };
 
 void Mesh::LoadMesh(const std::string& file)
@@ -98,12 +99,19 @@ void Mesh::LoadMesh(const std::string& file)
 		InitMesh(i, paiMesh);
 	}
 
+	if (!m_hasMaterial)
+		return;
+
 	for (int i = 0; i < pScene->mNumMeshes; i++) {
 		// per mesh entry init materials, assume one on one map per entry and per property
 		const aiMesh *paiMesh = pScene->mMeshes[i];
 		aiMaterial *paiMaterial = pScene->mMaterials[paiMesh->mMaterialIndex];
 
-		assert(paiMaterial->GetTextureCount(aiTextureType_DIFFUSE) == 1);
+		//assert(paiMaterial->GetTextureCount(aiTextureType_DIFFUSE) == 1);
+		if (paiMaterial->GetTextureCount(aiTextureType_DIFFUSE) == 0) {
+			m_hasMaterial = false;
+			break;
+		}
 
 		aiString filename;
 		paiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &filename);
@@ -153,18 +161,32 @@ void Mesh::InitMesh(unsigned int idx, const aiMesh *paiMesh) {
 	std::vector<unsigned int> Indices;
 
 	assert(paiMesh->HasNormals());
-	assert(paiMesh->HasTextureCoords(0));
+
+	if (paiMesh->HasTextureCoords(0))
+		m_hasMaterial = true;
+	else
+		m_hasMaterial = false;
+
+	//assert(paiMesh->HasTextureCoords(0));
 
 	for (int i = 0; i < paiMesh->mNumVertices; i++) {
 		const aiVector3D *pPos = &(paiMesh->mVertices[i]);
 		const aiVector3D *pNormal = &(paiMesh->mNormals[i]);
-		const aiVector3D *pTexc = &(paiMesh->mTextureCoords[0][i]);
 
-		Vertex v(glm::vec3(pPos->x, pPos->y, pPos->z),
-				glm::vec3(pNormal->x, pNormal->y, pNormal->z),
-				glm::vec2(pTexc->x, pTexc->y));
+		if (paiMesh->HasTextureCoords(0)) {
+			const aiVector3D *pTexc = &(paiMesh->mTextureCoords[0][i]);
 
-		Vertices.push_back(v);
+			Vertex v(glm::vec3(pPos->x, pPos->y, pPos->z),
+					glm::vec3(pNormal->x, pNormal->y, pNormal->z),
+					glm::vec2(pTexc->x, pTexc->y));
+
+			Vertices.push_back(v);
+		} else {
+			Vertex v(glm::vec3(pPos->x, pPos->y, pPos->z),
+					glm::vec3(pNormal->x, pNormal->y, pNormal->z));
+
+			Vertices.push_back(v);
+		}
 	}
 
 	for (int i = 0; i < paiMesh->mNumFaces; i++) {
@@ -188,6 +210,8 @@ void Mesh::RenderMesh()
 {
 	for (int i = 0; i < m_Entries.size(); i++) {
 		glBindVertexArray(m_Entries[i].m_VA);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Entries[i].m_IB);
+
 		glBindBuffer(GL_ARRAY_BUFFER, m_Entries[i].m_VB);
 		// attribute 0 store position
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)0);
@@ -197,15 +221,15 @@ void Mesh::RenderMesh()
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)12);
 		glEnableVertexAttribArray(1);
 
-		// attribute 2 store texc
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)24);
-		glEnableVertexAttribArray(2);
+		if (m_hasMaterial) {
+			// attribute 2 store texc
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)24);
+			glEnableVertexAttribArray(2);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Entries[i].m_IB);
-
-		// texture unit 0 store diffuse
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_Entries[i].m_TXE[Material_Diffuse].m_TID);
+			// texture unit 0 store diffuse
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, m_Entries[i].m_TXE[Material_Diffuse].m_TID);
+		}
 
 		// uniform diffuse texture outside
 		glDrawElements(GL_TRIANGLES, m_Entries[i].m_NumIndices, GL_UNSIGNED_INT, 0);
