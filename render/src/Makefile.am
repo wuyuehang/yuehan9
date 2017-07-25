@@ -56,17 +56,13 @@ bin_PROGRAMS += perspective_correct
 perspective_correct_SOURCES = perspective_correct.cpp
 perspective_correct_CXXFLAGS = $(AM_CXXFLAGS)
 
-bin_PROGRAMS += draw_xfb
-draw_xfb_SOURCES = draw_xfb.c
-draw_xfb_CFLAGS = $(AM_CFLAGS)
+bin_PROGRAMS += xfb
+xfb_SOURCES = xfb.cpp
+xfb_CXXFLAGS = $(AM_CXXFLAGS)
 
 bin_PROGRAMS += separate_shader_obj
 separate_shader_obj_SOURCES = separate_shader_obj.cpp
 separate_shader_obj_CXXFLAGS = $(AM_CXXFLAGS)
-
-bin_PROGRAMS += fragcord
-fragcord_SOURCES = fragcord.c
-fragcord_CFLAGS = $(AM_CFLAGS)
 
 bin_PROGRAMS += stencil
 stencil_SOURCES = stencil.c
@@ -111,3 +107,7 @@ model3_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += funky
 funky_SOURCES = funky.cpp
 funky_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += fragc
+fragc_SOURCES = fragc.cpp
+fragc_CXXFLAGS = $(AM_CXXFLAGS)

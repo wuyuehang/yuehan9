@@ -1,19 +1,27 @@
 #include <SOIL/SOIL.h>
-#include "ogl_warp.h"
+#include "glrunner.h"
+
+void RenderCB(GlRunner *runner)
+{
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearDepth(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
+}
 
 #define _enable_cull_face_ 1
 int main(int argc, char **argv)
 {
-	struct ogl_warp *ow = (struct ogl_warp *)malloc(sizeof(struct ogl_warp));
-	memset(ow, 0, sizeof(*ow));
+	GlRunner *runner = new GlRunner(RenderCB);
 
-	create_ogl_warp(ow);
+	GLuint vs = runner->BuildShaderProgram("shaders/quad.vert", GL_VERTEX_SHADER);
+	GLuint fs = runner->BuildShaderProgram("shaders/quad.frag", GL_FRAGMENT_SHADER);
 
-	create_ogl_warp_shaders(&ow->vertex_shaders[0], "shaders/quad.vert",
-			&ow->fragment_shaders[0], "shaders/quad.frag");
+	GLuint pl = runner->BuildProgramPipeline();
 
-	create_ogl_warp_program(ow->vertex_shaders[0],
-			ow->fragment_shaders[0], &ow->programs[0]);
+	glUseProgramStages(pl, GL_VERTEX_SHADER_BIT, vs);
+	glUseProgramStages(pl, GL_FRAGMENT_SHADER_BIT, fs);
 
 #if _enable_cull_face_
 	glEnable(GL_CULL_FACE);
@@ -40,22 +48,28 @@ int main(int argc, char **argv)
 			0, 1, 3
 	};
 
-	glBindVertexArray(ow->vao[0]);
+	GLuint VAO, VBO[3];
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[0]);
+	glGenBuffers(3, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(pos_buf), pos_buf, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(texcord_buf), texcord_buf, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ow->vbo[2]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[2]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_buf), index_buf, GL_STATIC_DRAW);
+
+	enum {attr_pos, attr_texc};
+	glEnableVertexAttribArray(attr_pos);
+	glVertexAttribFormat(attr_pos, 2, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribBinding(attr_pos, 0);
+	glBindVertexBuffer(attr_pos, VBO[0], 0, 2*sizeof(GLfloat));
+
+	glEnableVertexAttribArray(attr_texc);
+	glVertexAttribFormat(attr_texc, 2, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribBinding(attr_texc, 1);
+	glBindVertexBuffer(attr_texc, VBO[1], 0, 2*sizeof(GLfloat));
 
 	/* loading texture image */
 	GLuint textures[1];
@@ -68,23 +82,11 @@ int main(int argc, char **argv)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
 	SOIL_free_image_data(img);
 
-	glUniform1i(glGetUniformLocation(ow->programs[0], "color2D"), 0);
+	glProgramUniform1i(fs, glGetUniformLocation(fs, "color2D"), 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	while (!glfwWindowShouldClose(ow->win))
-	{
-		glfwPollEvents();
-
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
-
-		glfwSwapBuffers(ow->win);
-	}
-
-	glfwTerminate();
+	runner->OnRender();
 
 	return 0;
 }

@@ -4,7 +4,9 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "ogl_warp.h"
+#include "glrunner.h"
+
+GLuint VS;
 
 GLfloat cube[] = {
 	-1.0, 1.0, -1.0,
@@ -64,32 +66,55 @@ void skybox_key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
 	}
 }
 
+void RenderCB(GlRunner *runner)
+{
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearDepthf(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glm::mat4 view_mat = glm::lookAt(
+			glm::vec3(0, 0, 0),
+			glm::vec3(cos(vAngle)*cos(hAngle), sin(vAngle)*cos(hAngle), sin(hAngle)),
+			glm::vec3(0, 1, 0)
+	);
+
+	glProgramUniformMatrix4fv(VS, glGetUniformLocation(VS, "uView"), 1, GL_FALSE, &view_mat[0][0]);
+
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, (void *)0);
+}
+
 int main()
 {
-	struct ogl_warp *ow = (struct ogl_warp *)malloc(sizeof(struct ogl_warp));
-	memset(ow, 0, sizeof(*ow));
+	GlRunner *runner = new GlRunner(RenderCB);
 
-	create_ogl_warp(ow);
+	runner->UpdateKeyboardCB(skybox_key_cb);
 
-	glfwSetKeyCallback(ow->win, skybox_key_cb);
+	VS = runner->BuildShaderProgram("shaders/skybox.vert", GL_VERTEX_SHADER);
+	GLuint FS = runner->BuildShaderProgram("shaders/skybox.frag", GL_FRAGMENT_SHADER);
 
-	create_ogl_warp_shaders(&ow->vertex_shaders[0], "shaders/skybox.vert",
-		&ow->fragment_shaders[0], "shaders/skybox.frag");
+	GLuint pipe = runner->BuildProgramPipeline();
 
-	create_ogl_warp_program(ow->vertex_shaders[0],
-		ow->fragment_shaders[0], &ow->programs[0]);
+	glUseProgramStages(pipe, GL_VERTEX_SHADER_BIT, VS);
+	glUseProgramStages(pipe, GL_FRAGMENT_SHADER_BIT, FS);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL); // optimize for last draw of skybox
 
-	glBindVertexArray(ow->vao[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[0]);
+	GLuint VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	GLuint VBO[2];
+	glGenBuffers(2, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GL_FLOAT), (GLvoid *)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribBinding(0, 0);
+	glBindVertexBuffer(0, VBO[0], 0, 3*sizeof(GLfloat));
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ow->vbo[1]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(idx), idx, GL_STATIC_DRAW);
 
 	// bind cubemap texture
@@ -121,33 +146,12 @@ int main()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	glActiveTexture(GL_TEXTURE0);
-	glUniform1i(glGetUniformLocation(ow->programs[0], "uCubeTetxure"), 0);
+	glProgramUniform1i(FS, glGetUniformLocation(FS, "uCubeTetxure"), 0);
 
 	glm::mat4 proj_mat = glm::perspective(glm::radians(60.0f), 1.0f, 0.01f, 100.0f);
-	glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uProj"), 1, GL_FALSE, &proj_mat[0][0]);
+	glProgramUniformMatrix4fv(VS, glGetUniformLocation(VS, "uProj"), 1, GL_FALSE, &proj_mat[0][0]);
 
-
-	while (!glfwWindowShouldClose(ow->win)) {
-		glfwPollEvents();
-
-		glClearColor(0.0, 0.0, 0.0, 1.0);
-		glClearDepthf(1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glm::mat4 view_mat = glm::lookAt(
-				glm::vec3(0, 0, 0),
-				glm::vec3(cos(vAngle)*cos(hAngle), sin(vAngle)*cos(hAngle), sin(hAngle)),
-				glm::vec3(0, 1, 0)
-		);
-
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uView"), 1, GL_FALSE, &view_mat[0][0]);
-
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, (void *)0);
-
-		glfwSwapBuffers(ow->win);
-	}
-
-	glfwTerminate();
+	runner->OnRender();
 
 	return 0;
 }

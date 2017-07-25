@@ -4,12 +4,22 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "ogl_warp.h"
+#include "glrunner.h"
+
+glm::mat4 view_mat = glm::lookAt(
+		glm::vec3(-3, 1, 4),
+		glm::vec3(0, 0, 0),
+		glm::vec3(0, 1, 0)
+);
 
 static float angle = 60.0;
 static float ratio = 1.0;
 static float near = 0.01;
 static float far = 100.0;
+
+GLuint vs, fs;
+GLuint VAO;
+GLuint VBO;
 
 void tune_key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
 {
@@ -47,40 +57,52 @@ void tune_key_cb(GLFWwindow* win, int key, int scancode, int action, int mode)
 		far = 100.0;
 	}
 
-	printf("angle: %f\n", angle);
-	printf("ratio: %f\n", ratio);
-	printf("near: %f\n", near);
-	printf("far: %f\n", far);
+	std::cout << "angle: " << angle << std::endl;
+	std::cout << "ratio: " << ratio << std::endl;
+	std::cout << "near: " << near << std::endl;
+	std::cout << "far: " << far << std::endl;
+}
+
+void RenderCB(GlRunner *runner)
+{
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearDepthf(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glm::mat4 proj_mat = glm::perspective(glm::radians(angle), ratio, near, far);
+	glm::mat4 mvp_mat = proj_mat * view_mat;
+
+	glProgramUniformMatrix4fv(vs, glGetUniformLocation(vs, "MVP"), 1, GL_FALSE, &mvp_mat[0][0]);
+
+	glProgramUniform4f(fs, glGetUniformLocation(fs, "uColor"), 1.0, 0.0, 0.0, 1.0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glProgramUniform4f(fs, glGetUniformLocation(fs, "uColor"), 0.0, 0.0, 1.0, 1.0);
+	glDrawArrays(GL_TRIANGLES, 6, 12);
 }
 
 int main()
 {
-	struct ogl_warp *ow = (struct ogl_warp *)malloc(sizeof(struct ogl_warp));
-	memset(ow, 0, sizeof(*ow));
+	GlRunner *runner = new GlRunner(RenderCB);
 
-	create_ogl_warp(ow);
+	runner->UpdateKeyboardCB(tune_key_cb);
 
-	glfwSetKeyCallback(ow->win, tune_key_cb);
+	vs = runner->BuildShaderProgram("shaders/mvp.vert", GL_VERTEX_SHADER);
 
-	create_ogl_warp_shaders(&ow->vertex_shaders[0], "shaders/mvp.vert",
-			&ow->fragment_shaders[0], "shaders/simple.frag");
+	fs = runner->BuildShaderProgram("shaders/simple.frag", GL_FRAGMENT_SHADER);
 
-	create_ogl_warp_program(ow->vertex_shaders[0],
-			ow->fragment_shaders[0], &ow->programs[0]);
+	GLuint ppline = runner->BuildProgramPipeline();
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	glUseProgramStages(ppline, GL_VERTEX_SHADER_BIT, vs);
+	glUseProgramStages(ppline, GL_FRAGMENT_SHADER_BIT, fs);
 
-	GLfloat tri0[] = {
+	GLfloat pos[] = {
 		-0.75, 0.75, 0.2,
 		0.75, 0.75, 0.2,
 		0.75, -0.75, 0.2,
 		0.9, 0.9, 0.5,
 		0.9, 0.7, 0.5,
 		0.7, 0.9, 0.5,
-	};
-
-	GLfloat tri1[] = {
 		-0.75, 0.75, 0.2,
 		0.75, -0.75, 0.2,
 		-0.75, -0.75, 0.2,
@@ -89,49 +111,17 @@ int main()
 		0.7, 0.7, 0.5
 	};
 
-	glBindVertexArray(ow->vao[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(tri0), tri0, GL_STATIC_DRAW);
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(pos), pos, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GL_FLOAT), (GLvoid *)0);
 	glEnableVertexAttribArray(0);
 
-	glBindVertexArray(ow->vao[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(tri1), tri1, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GL_FLOAT), (GLvoid *)0);
-	glEnableVertexAttribArray(0);
-
-	glm::mat4 view_mat = glm::lookAt(
-			glm::vec3(-3, 1, 4),
-			glm::vec3(0, 0, 0),
-			glm::vec3(0, 1, 0)
-	);
-
-	while (!glfwWindowShouldClose(ow->win)) {
-		glfwPollEvents();
-		glClearColor(0.0, 0.0, 0.0, 1.0);
-		glClearDepthf(1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glm::mat4 proj_mat = glm::perspective(glm::radians(angle), ratio, near, far);
-		glm::mat4 mvp_mat = proj_mat * view_mat;
-
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "MVP"), 1, GL_FALSE, &mvp_mat[0][0]);
-
-		glBindVertexArray(ow->vao[0]);
-		glUniform4f(glGetUniformLocation(ow->programs[0], "uColor"), 1.0, 0.0, 0.0, 1.0);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		glBindVertexArray(ow->vao[1]);
-		glUniform4f(glGetUniformLocation(ow->programs[0], "uColor"), 0.0, 0.0, 1.0, 1.0);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		glfwSwapBuffers(ow->win);
-	}
-
-	glfwTerminate();
+	runner->OnRender();
 
 	return 0;
 }

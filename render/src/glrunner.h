@@ -34,8 +34,12 @@ public:
 	static void OnKeyboard(GLFWwindow*, int, int, int, int);
 	GLuint BuildShaderProgram(const char *filename, GLenum type);
 	GLuint BuildProgramPipeline();
+	GLuint BuildXfb(const char *filename, GLsizei count, const char **varyings, GLenum mode);
 	void UpdateKeyboardCB(GLFWkeyfun);
 	void OnRender();
+	GLFWwindow* win() {
+		return this->_win;
+	}
 
 private:
 	void InitWindonw();
@@ -155,5 +159,52 @@ GLuint GlRunner::BuildProgramPipeline()
 	glBindProgramPipeline(ppline);
 
 	return ppline;
+}
+
+GLuint GlRunner::BuildXfb(const char *filename, GLsizei count, const char **varyings, GLenum mode)
+{
+	GLuint ShaderObj;
+	GLuint ProgramObj;
+	std::string source;
+	GLchar message[512];
+	GLint status;
+
+	assert(filename);
+
+	ReadFile(filename, source);
+
+	const GLchar *token = source.c_str();
+
+	ShaderObj = glCreateShader(GL_VERTEX_SHADER);
+
+	glShaderSource(ShaderObj, 1, &token, nullptr);
+
+	glCompileShader(ShaderObj);
+
+	glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &status);
+
+	if (!status) {
+		glGetShaderInfoLog(ShaderObj, 512, nullptr, message);
+		std::cout << message << std::endl;
+	}
+
+	ProgramObj = glCreateProgram();
+
+	glAttachShader(ProgramObj, ShaderObj);
+
+	glTransformFeedbackVaryings(ProgramObj, count, varyings, mode);
+
+
+	glLinkProgram(ProgramObj);
+
+	glGetProgramiv(ProgramObj, GL_LINK_STATUS, &status);
+	if (!status) {
+		glGetProgramInfoLog(ProgramObj, 512, nullptr, message);
+		std::cout << message << std::endl;
+	}
+
+	glUseProgram(ProgramObj);
+
+	return ProgramObj;
 }
 #endif
