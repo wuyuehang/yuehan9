@@ -2,7 +2,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "ogl_warp.h"
+#include "glrunner.h"
 #include "mesh_loader.h"
 
 #define CameraGrid	float(0.5)
@@ -24,66 +24,57 @@ float Far = 100.0;
 
 void model_key_cb(GLFWwindow* win, int key, int scancode, int action, int mode);
 
+GLuint FS, VS;
+Mesh *pMeshContainer;
+
+void RenderCB(GlRunner *runner)
+{
+	glClearColor(0.2, 0.1, 0.2, 1.0);
+	glClearDepthf(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// prepare matrix
+	glm::mat4 Model = glm::mat4(1.0);
+	glm::mat4 ModelTranslation = glm::translate(glm::vec3(HorizontalDelta, VerticalDelta, 0));
+
+	Model = ModelTranslation * Model;
+
+	glm::mat4 View = glm::lookAt(
+			RoamCameraLoc, RoamLensDirect, RoamCameraUp);
+
+	glm::mat4 Projection = glm::perspective(glm::radians(FOV), Ratio, Near, Far);
+
+	// update uniform per frame
+	glProgramUniformMatrix4fv(VS, glGetUniformLocation(VS, "uModel"), 1, GL_FALSE, &Model[0][0]);
+	glProgramUniformMatrix4fv(VS, glGetUniformLocation(VS, "uView"), 1, GL_FALSE, &View[0][0]);
+	glProgramUniformMatrix4fv(VS, glGetUniformLocation(VS, "uProjection"), 1, GL_FALSE, &Projection[0][0]);
+
+	// install light
+	glProgramUniform3fv(FS, glGetUniformLocation(FS, "uLightLoc"), 1, &LightLocation[0]);
+
+	// trigger draw
+	pMeshContainer->RenderMesh();
+}
+
 int main()
 {
-	struct ogl_warp *ow = (struct ogl_warp *)malloc(sizeof(struct ogl_warp));
+	GlRunner *runner = new GlRunner(RenderCB);
 
-	memset(ow, 0, sizeof(*ow));
+	runner->UpdateKeyboardCB(model_key_cb);
 
-	glfwWindowHint(GLFW_SAMPLES, 16);
+	VS = runner->BuildShaderProgram("shaders/model.vert", GL_VERTEX_SHADER);
+	FS = runner->BuildShaderProgram("shaders/model.frag", GL_FRAGMENT_SHADER);
 
-	create_ogl_warp(ow);
+	GLuint pipe = runner->BuildProgramPipeline();
+	glUseProgramStages(pipe, GL_VERTEX_SHADER_BIT, VS);
+	glUseProgramStages(pipe, GL_FRAGMENT_SHADER_BIT, FS);
 
-	glfwSetKeyCallback(ow->win, model_key_cb);
-
-	// preamble
-	glEnable(GL_MULTISAMPLE);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-
-	create_ogl_warp_shaders(&ow->vertex_shaders[0], "shaders/model.vert",
-			&ow->fragment_shaders[0], "shaders/model.frag");
-
-	create_ogl_warp_program(ow->vertex_shaders[0],
-			ow->fragment_shaders[0], &ow->programs[0]);
-
-	Mesh *pMeshContainer = new Mesh();
+	pMeshContainer = new Mesh();
 
 	pMeshContainer->LoadMesh("objs/lantern.obj");
 
-	while (!glfwWindowShouldClose(ow->win)) {
-		glfwPollEvents();
 
-		glClearColor(0.2, 0.1, 0.2, 1.0);
-		glClearDepthf(1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// prepare matrix
-		glm::mat4 Model = glm::mat4(1.0);
-		glm::mat4 ModelTranslation = glm::translate(glm::vec3(HorizontalDelta, VerticalDelta, 0));
-
-		Model = ModelTranslation * Model;
-
-		glm::mat4 View = glm::lookAt(
-				RoamCameraLoc, RoamLensDirect, RoamCameraUp);
-
-		glm::mat4 Projection = glm::perspective(glm::radians(FOV), Ratio, Near, Far);
-
-		// update uniform per frame
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uModel"), 1, GL_FALSE, &Model[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uView"), 1, GL_FALSE, &View[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uProjection"), 1, GL_FALSE, &Projection[0][0]);
-
-		// install light
-		glUniform3fv(glGetUniformLocation(ow->programs[0], "uLightLoc"), 1, &LightLocation[0]);
-
-		// trigger draw
-		pMeshContainer->RenderMesh();
-
-		glfwSwapBuffers(ow->win);
-	}
-
-	glfwTerminate();
+	runner->OnRender();
 
 	return 0;
 }

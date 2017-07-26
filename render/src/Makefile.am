@@ -41,8 +41,8 @@ query_SOURCES = query.cpp
 query_CXXFLAGS = $(AM_CXXFLAGS)
 
 bin_PROGRAMS += rendertexture
-rendertexture_SOURCES = rendertexture.c
-rendertexture_CFLAGS = $(AM_CFLAGS)
+rendertexture_SOURCES = rendertexture.cpp
+rendertexture_CXXFLAGS = $(AM_CXXFLAGS)
 
 bin_PROGRAMS += attrib
 attrib_SOURCES = attrib.cpp
@@ -65,8 +65,8 @@ separate_shader_obj_SOURCES = separate_shader_obj.cpp
 separate_shader_obj_CXXFLAGS = $(AM_CXXFLAGS)
 
 bin_PROGRAMS += stencil
-stencil_SOURCES = stencil.c
-stencil_CFLAGS = $(AM_CFLAGS)
+stencil_SOURCES = stencil.cpp
+stencil_CXXFLAGS = $(AM_CXXFLAGS)
 
 bin_PROGRAMS += indirect
 indirect_SOURCES = indirect.cpp

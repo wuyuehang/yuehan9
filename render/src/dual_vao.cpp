@@ -25,7 +25,7 @@ void RenderCB(GlRunner *runner)
 
 	/* recalculate model world matrix */
 	struct timeval tv;
-	gettimeofday(&tv, NULL);
+	gettimeofday(&tv, nullptr);
 	static long int startup = 0;
 
 	if (0 == startup)

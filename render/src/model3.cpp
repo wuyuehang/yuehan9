@@ -64,7 +64,7 @@ int main()
 
 	runner->UpdateKeyboardCB(model_key_cb);
 
-	vsProgram = runner->BuildShaderProgram("shaders/model.vert", GL_VERTEX_SHADER);
+	vsProgram = runner->BuildShaderProgram("shaders/model_texc.vert", GL_VERTEX_SHADER);
 
 	fsProgram = runner->BuildShaderProgram("shaders/model3.frag", GL_FRAGMENT_SHADER);
 

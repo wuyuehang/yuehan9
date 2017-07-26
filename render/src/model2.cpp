@@ -3,8 +3,8 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "ogl_warp.h"
 #include "mesh_loader.h"
+#include "glrunner.h"
 
 // model property
 static float oRefractionRatio = 1.0 / 1.52;
@@ -58,53 +58,118 @@ GLushort idx[] = {
 
 void model_key_cb(GLFWwindow* win, int key, int scancode, int action, int mode);
 
+GLuint VS[2], FS[2];
+GLuint pipe;
+Mesh *pMeshContainer;
+GLuint VAO;
+GLuint skyboxID;
+
+void RenderCB(GlRunner *runner)
+{
+	glClearColor(0.2, 0.1, 0.2, 1.0);
+	glClearDepthf(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// 3. render the model for optimization
+	glUseProgramStages(pipe, GL_VERTEX_SHADER_BIT, VS[0]);
+	glUseProgramStages(pipe, GL_FRAGMENT_SHADER_BIT, FS[0]);
+
+	// 3.1 prepare matrix
+	glm::mat4 Model = glm::mat4(1.0);
+
+	glm::mat4 ModelTranslation = glm::translate(glm::vec3(HorizontalDelta, VerticalDelta, 0));
+
+	Model = ModelTranslation * Model;
+
+	glm::mat4 View = glm::lookAt(
+			RoamCameraLoc, RoamLensDirect, RoamCameraUp);
+
+	glm::mat4 Projection = glm::perspective(glm::radians(FOV), Ratio, Near, Far);
+
+	// 3.2 choose refraction or reflection
+	glProgramUniform1i(FS[0], glGetUniformLocation(FS[0], "uIsRefractionMode"), oFlipMode);
+	glProgramUniform1f(FS[0], glGetUniformLocation(FS[0], "uRefractionRatio"), oRefractionRatio);
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+
+	glActiveTexture(GL_TEXTURE0);
+	glProgramUniform1i(FS[0], glGetUniformLocation(FS[0], "uCubeTetxure"), 0);
+
+	// 3.3 update uniform per frame
+	glProgramUniformMatrix4fv(VS[0], glGetUniformLocation(VS[0], "uModel"), 1, GL_FALSE, &Model[0][0]);
+	glProgramUniformMatrix4fv(VS[0], glGetUniformLocation(VS[0], "uView"), 1, GL_FALSE, &View[0][0]);
+	glProgramUniformMatrix4fv(VS[0], glGetUniformLocation(VS[0], "uProjection"), 1, GL_FALSE, &Projection[0][0]);
+
+	glProgramUniform3fv(FS[0], glGetUniformLocation(FS[0], "uCameraLoc"), 1, &RoamCameraLoc[0]);
+
+	// 3.4 trigger model draw
+	pMeshContainer->RenderMesh();
+
+	// 4.1 render the skybox last
+	glDepthMask(GL_FALSE);
+
+	glBindVertexArray(VAO);
+	glUseProgramStages(pipe, GL_VERTEX_SHADER_BIT, VS[1]);
+	glUseProgramStages(pipe, GL_FRAGMENT_SHADER_BIT, FS[1]);
+
+	// 4.2 update cubemap model-view-perspective
+	glm::mat4 SkyboxModel = glm::mat4(1.0);
+	glm::mat4 SkyboxView = glm::lookAt(
+			glm::vec3(0, 0, 0),
+			glm::vec3(1, 0, 1),
+			glm::vec3(0, 1, 0)
+	);
+	glm::mat4 SkyboxProj = glm::perspective(glm::radians(FOV), Ratio, Near, Far);
+
+	glProgramUniformMatrix4fv(VS[1], glGetUniformLocation(VS[1], "uModel"), 1, GL_FALSE, &SkyboxModel[0][0]);
+	glProgramUniformMatrix4fv(VS[1], glGetUniformLocation(VS[1], "uView"), 1, GL_FALSE, &SkyboxView[0][0]);
+	glProgramUniformMatrix4fv(VS[1], glGetUniformLocation(VS[1], "uProj"), 1, GL_FALSE, &SkyboxProj[0][0]);
+
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, (void *)0);
+
+	// restore depth mask before swap
+	glDepthMask(GL_TRUE);
+
+}
+
 int main()
 {
-	struct ogl_warp *ow = (struct ogl_warp *)malloc(sizeof(struct ogl_warp));
+	GlRunner *runner = new GlRunner(RenderCB);
 
-	memset(ow, 0, sizeof(*ow));
+	runner->UpdateKeyboardCB(model_key_cb);
 
-	glfwWindowHint(GLFW_SAMPLES, 16);
-
-	create_ogl_warp(ow);
-
-	glfwSetKeyCallback(ow->win, model_key_cb);
+	pipe = runner->BuildProgramPipeline();
 
 	// preamble
-	glEnable(GL_MULTISAMPLE);
-	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
 	// 1. prepare resource for model
-	create_ogl_warp_shaders(&ow->vertex_shaders[0], "shaders/model.vert",
-			&ow->fragment_shaders[0], "shaders/model2.frag");
+	VS[0] = runner->BuildShaderProgram("shaders/model.vert", GL_VERTEX_SHADER);
+	FS[0] = runner->BuildShaderProgram("shaders/model2.frag", GL_FRAGMENT_SHADER);
 
-	create_ogl_warp_program(ow->vertex_shaders[0],
-			ow->fragment_shaders[0], &ow->programs[0]);
-
-	Mesh *pMeshContainer = new Mesh();
+	pMeshContainer = new Mesh();
 
 	pMeshContainer->LoadMesh("objs/stormtrooper.obj");
 
 	// 2.1 prepare resource for skybox background
-	create_ogl_warp_shaders(&ow->vertex_shaders[1], "shaders/skybox.vert",
-		&ow->fragment_shaders[1], "shaders/skybox.frag");
+	VS[1] = runner->BuildShaderProgram("shaders/skybox.vert", GL_VERTEX_SHADER);
+	FS[1] = runner->BuildShaderProgram("shaders/skybox.frag", GL_FRAGMENT_SHADER);
 
-	create_ogl_warp_program(ow->vertex_shaders[1],
-		ow->fragment_shaders[1], &ow->programs[1]);
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
 
-	glBindVertexArray(ow->vao[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[0]);
+	GLuint VBO[2];
+	glGenBuffers(2, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(skybox), skybox, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GL_FLOAT), (GLvoid *)0);
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ow->vbo[1]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(idx), idx, GL_STATIC_DRAW);
 
 	// 2.2 load the texture cube map
-	GLuint skyboxID;
 	glGenTextures(1, &skyboxID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
 
@@ -132,77 +197,9 @@ int main()
 	}
 
 	glActiveTexture(GL_TEXTURE0);
-	glUniform1i(glGetUniformLocation(ow->programs[1], "uCubeTetxure"), 0);
+	glProgramUniform1i(FS[1], glGetUniformLocation(FS[1], "uCubeTetxure"), 0);
 
-	while (!glfwWindowShouldClose(ow->win)) {
-		glfwPollEvents();
-
-		glClearColor(0.2, 0.1, 0.2, 1.0);
-		glClearDepthf(1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// 3. render the model for optimization
-		glUseProgram(ow->programs[0]);
-
-		// 3.1 prepare matrix
-		glm::mat4 Model = glm::mat4(1.0);
-
-		glm::mat4 ModelTranslation = glm::translate(glm::vec3(HorizontalDelta, VerticalDelta, 0));
-
-		Model = ModelTranslation * Model;
-
-		glm::mat4 View = glm::lookAt(
-				RoamCameraLoc, RoamLensDirect, RoamCameraUp);
-
-		glm::mat4 Projection = glm::perspective(glm::radians(FOV), Ratio, Near, Far);
-
-		// 3.2 choose refraction or reflection
-		glUniform1i(glGetUniformLocation(ow->programs[0], "uIsRefractionMode"), oFlipMode);
-		glUniform1f(glGetUniformLocation(ow->programs[0], "uRefractionRatio"), oRefractionRatio);
-
-		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
-
-		glActiveTexture(GL_TEXTURE0);
-		glUniform1i(glGetUniformLocation(ow->programs[0], "uCubeTetxure"), 0);
-
-		// 3.3 update uniform per frame
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uModel"), 1, GL_FALSE, &Model[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uView"), 1, GL_FALSE, &View[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uProjection"), 1, GL_FALSE, &Projection[0][0]);
-
-		glUniform3fv(glGetUniformLocation(ow->programs[0], "uCameraLoc"), 1, &RoamCameraLoc[0]);
-
-		// 3.4 trigger model draw
-		pMeshContainer->RenderMesh();
-
-		// 4.1 render the skybox last
-		glDepthMask(GL_FALSE);
-
-		glBindVertexArray(ow->vao[0]);
-		glUseProgram(ow->programs[1]);
-
-		// 4.2 update cubemap model-view-perspective
-		glm::mat4 SkyboxModel = glm::mat4(1.0);
-		glm::mat4 SkyboxView = glm::lookAt(
-				glm::vec3(0, 0, 0),
-				glm::vec3(1, 0, 1),
-				glm::vec3(0, 1, 0)
-		);
-		glm::mat4 SkyboxProj = glm::perspective(glm::radians(FOV), Ratio, Near, Far);
-
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[1], "uModel"), 1, GL_FALSE, &SkyboxModel[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[1], "uView"), 1, GL_FALSE, &SkyboxView[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[1], "uProj"), 1, GL_FALSE, &SkyboxProj[0][0]);
-
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, (void *)0);
-
-		// restore depth mask before swap
-		glDepthMask(GL_TRUE);
-
-		glfwSwapBuffers(ow->win);
-	}
-
-	glfwTerminate();
+	runner->OnRender();
 
 	return 0;
 }

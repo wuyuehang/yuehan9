@@ -5,7 +5,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "ogl_warp.h"
+#include "glrunner.h"
 
 #define _animate_object_ 1
 
@@ -97,68 +97,126 @@ GLushort idx[] = {
 	3, 6, 7
 };
 
-int main()
+GLuint VS[2], FS[2], pipe;
+GLuint skyboxID;
+GLuint VAO[2];
+
+glm::mat4 proj_mat = glm::perspective(glm::radians(60.0f), 1.0f, 0.01f, 100.0f);
+
+glm::vec3 camera_loc = glm::vec3(-2, 0, -2);
+
+glm::mat4 model_mat = glm::mat4(1.0);
+
+glm::mat4 view_mat = glm::lookAt(
+		camera_loc,
+		glm::vec3(0, 0, 0),
+		glm::vec3(0, 1, 0)
+);
+
+void RenderCB(GlRunner *runner)
 {
-	struct ogl_warp *ow = (struct ogl_warp *)malloc(sizeof(struct ogl_warp));
-	memset(ow, 0, sizeof(*ow));
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearDepthf(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	create_ogl_warp(ow);
+	// 1. render the object in the skybox
+#if _animate_object_
+	struct timeval tv;
+	gettimeofday(&tv, nullptr);
+	static long int startup = 0;
 
-	glfwSetKeyCallback(ow->win, skybox_key_cb);
+	if (0 == startup)
+		startup = tv.tv_sec * 1000000 + tv.tv_usec;
+	float gap = (tv.tv_sec * 1000000 + tv.tv_usec - startup) / 10000.0f;
+#endif
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL); // optimize for last draw of skybox
+	glBindVertexArray(VAO[0]);
+	glUseProgramStages(pipe, GL_VERTEX_SHADER_BIT, VS[0]);
+	glUseProgramStages(pipe, GL_FRAGMENT_SHADER_BIT, FS[0]);
 
-	// 1. set up resource for the object
-	create_ogl_warp_shaders(&ow->vertex_shaders[0], "shaders/environment.vert",
-			&ow->fragment_shaders[0], "shaders/environment.frag");
+	glProgramUniform1i(FS[0], glGetUniformLocation(FS[0], "uIsRefractionMode"), oFlipMode);
+	glProgramUniform1f(FS[0], glGetUniformLocation(FS[0], "uRefractionRatio"), oRefractionRatio);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+	glActiveTexture(GL_TEXTURE0);
+	glProgramUniform1i(FS[0], glGetUniformLocation(FS[0], "uCubeTetxure"), 0);
 
-	create_ogl_warp_program(ow->vertex_shaders[0],
-			ow->fragment_shaders[0], &ow->programs[0]);
+#if _animate_object_
+	model_mat = glm::rotate(glm::mat4(1.0), glm::radians(gap), glm::vec3(0.0, 1.0, 0.0));
+#else
+	model_mat = glm::mat4(1.0);
+#endif
 
-	glm::mat4 model_mat = glm::mat4(1.0);
+	glProgramUniformMatrix4fv(VS[0], glGetUniformLocation(VS[0], "uModel"), 1, GL_FALSE, &model_mat[0][0]);
+	glProgramUniformMatrix4fv(VS[0], glGetUniformLocation(VS[0], "uView"), 1, GL_FALSE, &view_mat[0][0]);
+	glProgramUniformMatrix4fv(VS[0], glGetUniformLocation(VS[0], "uProj"), 1, GL_FALSE, &proj_mat[0][0]);
 
-	glm::mat4 proj_mat = glm::perspective(glm::radians(60.0f), 1.0f, 0.01f, 100.0f);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	glm::vec3 camera_loc = glm::vec3(-2, 0, -2);
-	glUniform3fv(glGetUniformLocation(ow->programs[0], "uCameraLoc"), 1, &camera_loc[0]);
+	// 2. render the skybox in the background
+	glDepthMask(GL_FALSE);
 
-	glm::mat4 view_mat = glm::lookAt(
-			camera_loc,
+	glBindVertexArray(VAO[1]);
+	glUseProgramStages(pipe, GL_VERTEX_SHADER_BIT, VS[1]);
+	glUseProgramStages(pipe, GL_FRAGMENT_SHADER_BIT, FS[1]);
+
+	glm::mat4 skybox_view_mat = glm::lookAt(
 			glm::vec3(0, 0, 0),
+			glm::vec3(cos(vAngle)*cos(hAngle), sin(vAngle)*cos(hAngle), sin(hAngle)),
 			glm::vec3(0, 1, 0)
 	);
 
-	glBindVertexArray(ow->vao[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[0]);
+	glProgramUniformMatrix4fv(VS[1], glGetUniformLocation(VS[1], "uView"), 1, GL_FALSE, &skybox_view_mat[0][0]);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, (void *)0);
+	glDepthMask(GL_TRUE);
+}
+
+int main()
+{
+	GlRunner *runner = new GlRunner(RenderCB);
+
+	runner->UpdateKeyboardCB(skybox_key_cb);
+
+	glDepthFunc(GL_LEQUAL); // optimize for last draw of skybox
+
+	// 1. set up resource for the object
+	VS[0] = runner->BuildShaderProgram("shaders/environment.vert", GL_VERTEX_SHADER);
+	FS[0] = runner->BuildShaderProgram("shaders/environment.frag", GL_FRAGMENT_SHADER);
+
+	pipe = runner->BuildProgramPipeline();
+
+	glProgramUniform3fv(FS[0], glGetUniformLocation(FS[0], "uCameraLoc"), 1, &camera_loc[0]);
+
+	glGenVertexArrays(2, VAO);
+	glBindVertexArray(VAO[0]);
+
+	GLuint VBO[4];
+	glGenBuffers(4, VBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(obj), obj, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLvoid *)0);
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[3]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[3]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(normal), normal, GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLvoid *)0);
 	glEnableVertexAttribArray(1);
 
 	// 2. set up resource for the skybox
-	create_ogl_warp_shaders(&ow->vertex_shaders[1], "shaders/skybox.vert",
-		&ow->fragment_shaders[1], "shaders/skybox.frag");
+	VS[1] = runner->BuildShaderProgram("shaders/skybox.vert", GL_VERTEX_SHADER);
+	FS[1] = runner->BuildShaderProgram("shaders/skybox.frag", GL_FRAGMENT_SHADER);
 
-	create_ogl_warp_program(ow->vertex_shaders[1],
-		ow->fragment_shaders[1], &ow->programs[1]);
-
-	glBindVertexArray(ow->vao[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[1]);
+	glBindVertexArray(VAO[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(skybox), skybox, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GL_FLOAT), (GLvoid *)0);
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ow->vbo[2]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[2]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(idx), idx, GL_STATIC_DRAW);
 
 	// load the texture cube map
-	GLuint skyboxID;
 	glGenTextures(1, &skyboxID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
 
@@ -186,68 +244,11 @@ int main()
 	}
 
 	glActiveTexture(GL_TEXTURE0);
-	glUniform1i(glGetUniformLocation(ow->programs[1], "uCubeTetxure"), 0);
+	glProgramUniform1i(FS[1], glGetUniformLocation(FS[1], "uCubeTetxure"), 0);
 
-	glUniformMatrix4fv(glGetUniformLocation(ow->programs[1], "uProj"), 1, GL_FALSE, &proj_mat[0][0]);
+	glProgramUniformMatrix4fv(VS[1], glGetUniformLocation(VS[1], "uProj"), 1, GL_FALSE, &proj_mat[0][0]);
 
-	while (!glfwWindowShouldClose(ow->win))
-	{
-		glfwPollEvents();
-		glClearColor(0.0, 0.0, 0.0, 1.0);
-		glClearDepthf(1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// 1. render the object in the skybox
-#if _animate_object_
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		static long int startup = 0;
-
-		if (0 == startup)
-			startup = tv.tv_sec * 1000000 + tv.tv_usec;
-		float gap = (tv.tv_sec * 1000000 + tv.tv_usec - startup) / 10000.0f;
-#endif
-
-		glBindVertexArray(ow->vao[0]);
-		glUseProgram(ow->programs[0]);
-
-		glUniform1i(glGetUniformLocation(ow->programs[0], "uIsRefractionMode"), oFlipMode);
-		glUniform1f(glGetUniformLocation(ow->programs[0], "uRefractionRatio"), oRefractionRatio);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
-		glActiveTexture(GL_TEXTURE0);
-		glUniform1i(glGetUniformLocation(ow->programs[0], "uCubeTetxure"), 0);
-
-#if _animate_object_
-		model_mat = glm::rotate(glm::mat4(1.0), glm::radians(gap), glm::vec3(0.0, 1.0, 0.0));
-#else
-		model_mat = glm::mat4(1.0);
-#endif
-
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uModel"), 1, GL_FALSE, &model_mat[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uView"), 1, GL_FALSE, &view_mat[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[0], "uProj"), 1, GL_FALSE, &proj_mat[0][0]);
-
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		// 2. render the skybox in the background
-		glDepthMask(GL_FALSE);
-
-		glBindVertexArray(ow->vao[1]);
-		glUseProgram(ow->programs[1]);
-
-		glm::mat4 skybox_view_mat = glm::lookAt(
-				glm::vec3(0, 0, 0),
-				glm::vec3(cos(vAngle)*cos(hAngle), sin(vAngle)*cos(hAngle), sin(hAngle)),
-				glm::vec3(0, 1, 0)
-		);
-
-		glUniformMatrix4fv(glGetUniformLocation(ow->programs[1], "uView"), 1, GL_FALSE, &skybox_view_mat[0][0]);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, (void *)0);
-		glDepthMask(GL_TRUE);
-		glfwSwapBuffers(ow->win);
-	}
-
-	glfwTerminate();
+	runner->OnRender();
 
 	return 0;
 }

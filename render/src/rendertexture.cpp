@@ -1,5 +1,5 @@
 #include <assert.h>
-#include "ogl_warp.h"
+#include "glrunner.h"
 
 #define _draw_depth_buffer_only 1
 
@@ -15,23 +15,29 @@ GLfloat quad_uv[] = {
 		0.0, 0.0
 };
 
+GLuint VS[2], FS[2];
+GLuint pipe;
+GLuint VAO[2];
+
+void RenderCB(GlRunner *runner)
+{
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearDepth(1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
 int main(int argc, char **argv)
 {
-	struct ogl_warp *ow = (struct ogl_warp *)malloc(sizeof(struct ogl_warp));
+	GlRunner *runner = new GlRunner(RenderCB);
 
-	create_ogl_warp(ow);
+	VS[0] = runner->BuildShaderProgram("shaders/simple.vert", GL_VERTEX_SHADER);
+	FS[0] = runner->BuildShaderProgram("shaders/simple.frag", GL_FRAGMENT_SHADER);
+	VS[1] = runner->BuildShaderProgram("shaders/quad.vert", GL_VERTEX_SHADER);
+	FS[1] = runner->BuildShaderProgram("shaders/quad.frag", GL_FRAGMENT_SHADER);
+	pipe = runner->BuildProgramPipeline();
 
-	create_ogl_warp_shaders(&ow->vertex_shaders[0], "shaders/simple.vert",
-			&ow->fragment_shaders[0], "shaders/simple.frag");
-
-	create_ogl_warp_program(ow->vertex_shaders[0],
-			ow->fragment_shaders[0],
-			&ow->programs[0]);
-
-	glUniform4f(glGetUniformLocation(ow->programs[0], "uColor"), 1.0, 1.0, 0.0, 1.0);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	glProgramUniform4f(FS[0], glGetUniformLocation(FS[0], "uColor"), 1.0, 1.0, 0.0, 1.0);
 
 	// first pass, render texture
 	GLfloat pos_buf[] = {
@@ -40,8 +46,12 @@ int main(int argc, char **argv)
 			0.0, -0.5, 0.5,
 	};
 
-	glBindVertexArray(ow->vao[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[0]);
+	glGenVertexArrays(2, VAO);
+	glBindVertexArray(VAO[0]);
+
+	GLuint VBO[3];
+	glGenBuffers(3, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(pos_buf), pos_buf, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
@@ -51,7 +61,7 @@ int main(int argc, char **argv)
 	GLuint colorb;
 	glGenTextures(1, &colorb);
 	glBindTexture(GL_TEXTURE_2D, colorb);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, OGL_WIN_WIDTH, OGL_WIN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, GR_WIDTH, GR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 #endif
@@ -59,7 +69,7 @@ int main(int argc, char **argv)
 	GLuint depthb;
 	glGenTextures(1, &depthb);
 	glBindTexture(GL_TEXTURE_2D, depthb);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, OGL_WIN_WIDTH, OGL_WIN_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GR_WIDTH, GR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -89,25 +99,21 @@ int main(int argc, char **argv)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 
+	glUseProgramStages(pipe, GL_VERTEX_SHADER_BIT, VS[0]);
+	glUseProgramStages(pipe, GL_FRAGMENT_SHADER_BIT, FS[0]);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	// second pass
-	glBindVertexArray(ow->vao[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[1]);
+	glBindVertexArray(VAO[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_pos), quad_pos, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, ow->vbo[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_uv), quad_uv, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
-
-	create_ogl_warp_shaders(&ow->vertex_shaders[1], "shaders/quad.vert",
-			&ow->fragment_shaders[1], "shaders/quad.frag");
-
-	create_ogl_warp_program(ow->vertex_shaders[1], ow->fragment_shaders[1],
-			&ow->programs[1]);
 
 	glActiveTexture(GL_TEXTURE0);
 
@@ -117,22 +123,14 @@ int main(int argc, char **argv)
 	glBindTexture(GL_TEXTURE_2D, colorb);
 #endif
 
-	assert(glGetUniformLocation(ow->programs[1], "color2D") != -1);
-	glUniform1i(glGetUniformLocation(ow->programs[1], "color2D"), 0);
+	glProgramUniform1i(FS[1], glGetUniformLocation(FS[1], "color2D"), 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	while (!glfwWindowShouldClose(ow->win))
-	{
-		glfwPollEvents();
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClearDepth(1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glfwSwapBuffers(ow->win);
-	}
+	glUseProgramStages(pipe, GL_VERTEX_SHADER_BIT, VS[1]);
+	glUseProgramStages(pipe, GL_FRAGMENT_SHADER_BIT, FS[1]);
 
-	glfwTerminate();
+	runner->OnRender();
 
 	return 0;
 }

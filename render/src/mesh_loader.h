@@ -88,7 +88,7 @@ void Mesh::LoadMesh(const std::string& file)
 
 	const aiScene* pScene = Importer.ReadFile(file.c_str(), ASSIMP_LOAD_FLAGS);
 
-	assert(pScene != NULL);
+	assert(pScene != nullptr);
 
 	std::cout << "======== " << pScene->mNumMeshes << " MeshEntries" << std::endl;
 

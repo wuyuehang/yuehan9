@@ -91,8 +91,8 @@ void GlRunner::InitWindonw()
 
 #if GR_DEBUG
 	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(dbgCB, NULL);
-	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+	glDebugMessageCallback(dbgCB, nullptr);
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 #endif
 }
 
