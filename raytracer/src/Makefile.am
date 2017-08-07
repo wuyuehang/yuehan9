@@ -11,3 +11,7 @@ bare_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += bare_shadow
 bare_shadow_SOURCES = bare_shadow.cpp
 bare_shadow_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += bare_shadow2
+bare_shadow2_SOURCES = bare_shadow2.cpp
+bare_shadow2_CXXFLAGS = $(AM_CXXFLAGS)
