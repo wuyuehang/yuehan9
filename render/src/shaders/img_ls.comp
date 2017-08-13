@@ -1,0 +1,23 @@
+#version 450
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout (rgba8, binding = 0) uniform image2D store_image;
+
+void main(void)
+{
+	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+
+	// all blocks share same pattern, saturation
+	//imageStore(store_image, pos.xy, uvec4(gl_LocalInvocationID, 0));
+
+	// all blocks share same pattern, average
+	imageStore(store_image, pos.xy, vec4(gl_LocalInvocationID, 0.0) / float(gl_WorkGroupSize));
+
+	// same block shares same color
+	//imageStore(store_image, pos.xy, uvec4(gl_WorkGroupID, 0));
+
+	// same block shares same color, weight
+	//imageStore(store_image, pos.xy, vec4(gl_WorkGroupID, 0.0) / float(gl_NumWorkGroups));
+}

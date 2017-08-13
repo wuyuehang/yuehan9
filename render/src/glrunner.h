@@ -7,7 +7,7 @@
 #include <iostream>
 #include <fstream>
 
-#define GR_WIDTH	1280
+#define GR_WIDTH	1024
 #define GR_HEIGHT	1024
 #define GR_DEBUG	1
 
