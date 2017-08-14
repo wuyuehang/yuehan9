@@ -1,0 +1,28 @@
+#version 450
+
+precision highp float;
+
+#if 0
+layout (local_size_x = 64) in;
+#elif 0
+layout (local_size_x = 8, local_size_y = 8) in;
+#else
+layout (local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+#endif
+
+layout (binding = 0, rgba32i) uniform iimageBuffer src;
+
+layout (binding = 0) buffer ComputeSSBO {
+	ivec4 v[];
+} computeSSBO;
+
+void main()
+{
+#if 0
+	int idx = int(gl_LocalInvocationID.x);
+#else
+	int idx = int(gl_LocalInvocationIndex);
+#endif
+
+	computeSSBO.v[idx] = imageLoad(src, idx);
+}

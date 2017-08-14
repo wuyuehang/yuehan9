@@ -115,3 +115,7 @@ fragc_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += compute_image_load_store
 compute_image_load_store_SOURCES = compute_image_load_store.cpp
 compute_image_load_store_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += ssbo
+ssbo_SOURCES = ssbo.cpp
+ssbo_CXXFLAGS = $(AM_CXXFLAGS)
