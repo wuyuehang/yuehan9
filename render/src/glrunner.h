@@ -29,6 +29,7 @@ public:
 		this->_renderCB = fcb;
 		InitWindonw();
 		InitGL();
+		InitQuadDrawPipe();
 	}
 	~GlRunner();
 	static void OnKeyboard(GLFWwindow*, int, int, int, int);
@@ -37,6 +38,7 @@ public:
 	GLuint BuildXfb(const char *filename, GLsizei count, const char **varyings, GLenum mode);
 	void UpdateKeyboardCB(GLFWkeyfun);
 	void OnRender();
+	void DrawQuad(GLuint);
 	GLFWwindow* win() {
 		return this->_win;
 	}
@@ -44,9 +46,15 @@ public:
 private:
 	void InitWindonw();
 	void InitGL();
+	void InitQuadDrawPipe();
 	void ReadFile(const char *filename, std::string& source);
 	GLFWwindow *_win;
 	frameCallBack _renderCB;
+	// quad
+	GLuint _quadVS;
+	GLuint _quadFS;
+	GLuint _quadPPO;
+	GLuint _quadVAO;
 };
 
 void dbgCB(GLenum source, GLenum type, GLuint id,
@@ -103,6 +111,58 @@ void GlRunner::InitGL()
 	glDepthFunc(GL_LESS);
 }
 
+void GlRunner::InitQuadDrawPipe()
+{
+	_quadVS = BuildShaderProgram("shaders/quad.vert", GL_VERTEX_SHADER);
+	_quadFS = BuildShaderProgram("shaders/quad.frag", GL_FRAGMENT_SHADER);
+	_quadPPO = BuildProgramPipeline();
+
+	// draw quad
+	GLfloat pos_buf[] = {
+			-0.9f, 0.9f,
+			0.9f, -0.9f,
+			-0.9f, -0.9f,
+			0.9f, 0.9f
+	};
+
+	GLfloat texcord_buf[] = {
+			0.0f, 0.0f,
+			1.0f, 1.0f,
+			0.0f, 1.0f,
+			1.0f, 0.0f
+	};
+
+	GLushort index_buf[] = {
+			0, 1, 2,
+			0, 1, 3
+	};
+
+	GLuint VBO[3];
+	glGenVertexArrays(1, &_quadVAO);
+	glBindVertexArray(_quadVAO);
+
+	glGenBuffers(3, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(pos_buf), pos_buf, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(texcord_buf), texcord_buf, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[2]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_buf), index_buf, GL_STATIC_DRAW);
+
+	enum {attr_pos, attr_texc};
+	glEnableVertexAttribArray(attr_pos);
+	glVertexAttribFormat(attr_pos, 2, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribBinding(attr_pos, 0);
+	glBindVertexBuffer(attr_pos, VBO[0], 0, 2*sizeof(GLfloat));
+
+	glEnableVertexAttribArray(attr_texc);
+	glVertexAttribFormat(attr_texc, 2, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribBinding(attr_texc, 1);
+	glBindVertexBuffer(attr_texc, VBO[1], 0, 2*sizeof(GLfloat));
+
+	glBindVertexArray(0);
+}
+
 void GlRunner::OnRender()
 {
 	assert(this->_renderCB);
@@ -117,6 +177,24 @@ void GlRunner::OnRender()
 	}
 
 	glfwTerminate();
+}
+
+void GlRunner::DrawQuad(GLuint texobj)
+{
+	glBindProgramPipeline(_quadPPO);
+	glUseProgramStages(_quadPPO, GL_VERTEX_SHADER_BIT, _quadVS);
+	glUseProgramStages(_quadPPO, GL_FRAGMENT_SHADER_BIT, _quadFS);
+
+	glBindTexture(GL_TEXTURE_2D, texobj);
+	glActiveTexture(GL_TEXTURE0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glProgramUniform1i(_quadFS, glGetUniformLocation(_quadFS, "color2D"), 0);
+
+	glBindVertexArray(_quadVAO);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void *)0);
+	glBindVertexArray(0);
 }
 
 void GlRunner::ReadFile(const char *pfile, std::string& source)

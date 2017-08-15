@@ -119,3 +119,7 @@ compute_image_load_store_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += ssbo
 ssbo_SOURCES = ssbo.cpp
 ssbo_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += texture_init
+texture_init_SOURCES = texture_init.cpp
+texture_init_CXXFLAGS = $(AM_CXXFLAGS)

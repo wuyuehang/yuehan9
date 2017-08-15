@@ -3,41 +3,31 @@
 
 #define _draw_depth_buffer_only 1
 
-GLfloat quad_pos[] = {
-		-1.0, 1.0,
-		1.0, -1.0,
-		-1.0, -1.0,
-};
-
-GLfloat quad_uv[] = {
-		0.0, 1.0,
-		1.0, 0.0,
-		0.0, 0.0
-};
-
-GLuint VS[2], FS[2];
-GLuint pipe;
-GLuint VAO[2];
+GLuint colorb;
+GLuint depthb;
 
 void RenderCB(GlRunner *runner)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+
+#if _draw_depth_buffer_only
+	runner->DrawQuad(depthb);
+#else
+	runner->DrawQuad(colorb);
+#endif
 }
 
 int main(int argc, char **argv)
 {
 	GlRunner *runner = new GlRunner(RenderCB);
 
-	VS[0] = runner->BuildShaderProgram("shaders/simple.vert", GL_VERTEX_SHADER);
-	FS[0] = runner->BuildShaderProgram("shaders/simple.frag", GL_FRAGMENT_SHADER);
-	VS[1] = runner->BuildShaderProgram("shaders/quad.vert", GL_VERTEX_SHADER);
-	FS[1] = runner->BuildShaderProgram("shaders/quad.frag", GL_FRAGMENT_SHADER);
-	pipe = runner->BuildProgramPipeline();
+	GLuint VS = runner->BuildShaderProgram("shaders/simple.vert", GL_VERTEX_SHADER);
+	GLuint FS = runner->BuildShaderProgram("shaders/simple.frag", GL_FRAGMENT_SHADER);
+	GLuint pipe = runner->BuildProgramPipeline();
 
-	glProgramUniform4f(FS[0], glGetUniformLocation(FS[0], "uColor"), 1.0, 1.0, 0.0, 1.0);
+	glProgramUniform4f(FS, glGetUniformLocation(FS, "uColor"), 1.0, 1.0, 0.0, 1.0);
 
 	// first pass, render texture
 	GLfloat pos_buf[] = {
@@ -46,19 +36,19 @@ int main(int argc, char **argv)
 			0.0, -0.5, 0.5,
 	};
 
-	glGenVertexArrays(2, VAO);
-	glBindVertexArray(VAO[0]);
+	GLuint VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
 
-	GLuint VBO[3];
-	glGenBuffers(3, VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	GLuint VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(pos_buf), pos_buf, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
 	// first pass
 #if !_draw_depth_buffer_only
-	GLuint colorb;
 	glGenTextures(1, &colorb);
 	glBindTexture(GL_TEXTURE_2D, colorb);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, GR_WIDTH, GR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -66,7 +56,6 @@ int main(int argc, char **argv)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 #endif
 
-	GLuint depthb;
 	glGenTextures(1, &depthb);
 	glBindTexture(GL_TEXTURE_2D, depthb);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GR_WIDTH, GR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
@@ -99,36 +88,13 @@ int main(int argc, char **argv)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 
-	glUseProgramStages(pipe, GL_VERTEX_SHADER_BIT, VS[0]);
-	glUseProgramStages(pipe, GL_FRAGMENT_SHADER_BIT, FS[0]);
+	glBindProgramPipeline(pipe);
+	glUseProgramStages(pipe, GL_VERTEX_SHADER_BIT, VS);
+	glUseProgramStages(pipe, GL_FRAGMENT_SHADER_BIT, FS);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
-	// second pass
-	glBindVertexArray(VAO[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_pos), quad_pos, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_uv), quad_uv, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
-
-	glActiveTexture(GL_TEXTURE0);
-
-#if _draw_depth_buffer_only
-	glBindTexture(GL_TEXTURE_2D, depthb);
-#else
-	glBindTexture(GL_TEXTURE_2D, colorb);
-#endif
-
-	glProgramUniform1i(FS[1], glGetUniformLocation(FS[1], "color2D"), 0);
-
+	// bind back to onscreen fb0, we're drawing a quad onto
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	glUseProgramStages(pipe, GL_VERTEX_SHADER_BIT, VS[1]);
-	glUseProgramStages(pipe, GL_FRAGMENT_SHADER_BIT, FS[1]);
 
 	runner->OnRender();
 
