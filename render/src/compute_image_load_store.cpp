@@ -1,12 +1,14 @@
 #include "glrunner.h"
 
+GLuint store_image;
+
 void RenderCB(GlRunner *runner)
 {
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClearDepthf(1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	runner->DrawQuad(store_image);
 }
 
 int main()
@@ -61,7 +63,6 @@ int main()
 
 	glUseProgramStages(csppline, GL_COMPUTE_SHADER_BIT, CS);
 
-	GLuint store_image;
 	glGenTextures(1, &store_image);
 	glBindTexture(GL_TEXTURE_2D, store_image);
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, GR_WIDTH, GR_HEIGHT);
@@ -69,60 +70,6 @@ int main()
 	glBindImageTexture(0, store_image, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
 	glDispatchCompute(64, 64, 1);
-
-	// sample and render the previous computed texture
-	GLfloat pos_buf[] = {
-		-1.0, -1.0,
-		-1.0, 1.0,
-		1.0, -1.0,
-		-1.0, 1.0,
-		1.0, -1.0,
-		1.0, 1.0
-	};
-
-	GLfloat texc_buf[] = {
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 0.0,
-		0.0, 1.0,
-		1.0, 0.0,
-		1.0, 1.0
-	};
-
-	enum { attr_pos, attr_texc, attr_total };
-	GLuint VBO[attr_total];
-	glCreateBuffers(attr_total, VBO);
-	glNamedBufferStorage(VBO[attr_pos], sizeof(pos_buf), pos_buf, 0);
-	glNamedBufferStorage(VBO[attr_texc], sizeof(texc_buf), texc_buf, 0);
-
-	GLuint VAO;
-	glCreateVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	glEnableVertexAttribArray(attr_pos);
-	glEnableVertexAttribArray(attr_texc);
-
-	glVertexAttribFormat(attr_pos, 2, GL_FLOAT, GL_FALSE, 0);
-	glVertexAttribFormat(attr_texc, 2, GL_FLOAT, GL_FALSE, 0);
-
-	glVertexAttribBinding(attr_pos, 0);
-	glVertexAttribBinding(attr_texc, 1);
-
-	glBindVertexBuffer(0, VBO[attr_pos], 0, 2 * sizeof(GLfloat));
-	glBindVertexBuffer(1, VBO[attr_texc], 0, 2 * sizeof(GLfloat));
-
-	GLuint VS = runner->BuildShaderProgram("shaders/quad.vert", GL_VERTEX_SHADER);
-	GLuint FS = runner->BuildShaderProgram("shaders/quad.frag", GL_FRAGMENT_SHADER);
-	GLuint drawppline = runner->BuildProgramPipeline();
-	glUseProgramStages(drawppline, GL_VERTEX_SHADER_BIT, VS);
-	glUseProgramStages(drawppline, GL_FRAGMENT_SHADER_BIT, FS);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, store_image);
-
-	glProgramUniform1i(FS, glGetUniformLocation(FS, "color2D"), 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	runner->OnRender();
 
