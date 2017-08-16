@@ -7,8 +7,8 @@
 
 layout (local_size_x = _X, local_size_y = _Y) in;
 
-layout (binding = 0, rgba8) uniform image2D srcObj;
-layout (binding = 1, rgba8) uniform image2D writeObj;
+layout (binding = 0, rgba8) uniform readonly highp image2D srcObj;
+layout (binding = 1, rgba8) uniform writeonly highp image2D writeObj;
 
 shared vec4 tmp[_X*_Y];
 
