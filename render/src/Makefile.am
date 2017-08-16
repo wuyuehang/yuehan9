@@ -123,3 +123,7 @@ ssbo_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += texture_init
 texture_init_SOURCES = texture_init.cpp
 texture_init_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += cs_rwbarrier
+cs_rwbarrier_SOURCES = cs_rwbarrier.cpp
+cs_rwbarrier_CXXFLAGS = $(AM_CXXFLAGS)
