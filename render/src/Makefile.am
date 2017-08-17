@@ -127,3 +127,7 @@ texture_init_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += cs_rwbarrier
 cs_rwbarrier_SOURCES = cs_rwbarrier.cpp
 cs_rwbarrier_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += compute_large_image
+compute_large_image_SOURCES = compute_large_image.cpp
+compute_large_image_CXXFLAGS = $(AM_CXXFLAGS)
