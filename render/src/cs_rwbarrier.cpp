@@ -53,9 +53,9 @@ int main()
 	glBindImageTexture(0, srcObj, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
 	glBindImageTexture(1, writeObj, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
-	GLuint CS = runner->BuildShaderProgram("shaders/cs_rwbarrier.comp", GL_COMPUTE_SHADER);
+	GLuint CS1 = runner->BuildShaderProgram("shaders/cs_rwbarrier.comp", GL_COMPUTE_SHADER);
 	GLuint CSPPO = runner->BuildProgramPipeline();
-	glUseProgramStages(CSPPO, GL_COMPUTE_SHADER_BIT, CS);
+	glUseProgramStages(CSPPO, GL_COMPUTE_SHADER_BIT, CS1);
 
 	glDispatchCompute(1, 1, 1);
 
@@ -69,7 +69,11 @@ int main()
 	glBindImageTexture(0, writeObj, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
 	glBindImageTexture(1, dstObj, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
-	glDispatchCompute(1, 1, 1);
+	// dispath the 2D texture into different work dimension
+	GLuint CS2 = runner->BuildShaderProgram("shaders/cs_rwbarrier2.comp", GL_COMPUTE_SHADER);
+	glUseProgramStages(CSPPO, GL_COMPUTE_SHADER_BIT, CS2);
+
+	glDispatchCompute(1, _sz, 1);
 
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
