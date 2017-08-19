@@ -135,3 +135,7 @@ compute_large_image_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += named_uniform_block
 named_uniform_block_SOURCES = named_uniform_block.cpp
 named_uniform_block_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += copying
+copying_SOURCES = copying.cpp
+copying_CXXFLAGS = $(AM_CXXFLAGS)
