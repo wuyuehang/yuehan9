@@ -7,3 +7,7 @@ LDADD = -lm
 bin_PROGRAMS += triangle_swr
 triangle_swr_SOURCES = triangle_swr.cpp
 triangle_swr_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += barycentric_swr
+barycentric_swr_SOURCES = barycentric_swr.cpp
+barycentric_swr_CXXFLAGS = $(AM_CXXFLAGS)
