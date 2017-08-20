@@ -11,3 +11,7 @@ triangle_swr_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += barycentric_swr
 barycentric_swr_SOURCES = barycentric_swr.cpp
 barycentric_swr_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += interpolation_swr
+interpolation_swr_SOURCES = interpolation_swr.cpp
+interpolation_swr_CXXFLAGS = $(AM_CXXFLAGS)
