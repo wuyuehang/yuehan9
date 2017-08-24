@@ -139,3 +139,7 @@ named_uniform_block_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += copying
 copying_SOURCES = copying.cpp
 copying_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += atomic_count
+atomic_count_SOURCES = atomic_count.cpp
+atomic_count_CXXFLAGS = $(AM_CXXFLAGS)
