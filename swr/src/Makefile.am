@@ -15,3 +15,11 @@ barycentric_swr_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += interpolation_swr
 interpolation_swr_SOURCES = interpolation_swr.cpp
 interpolation_swr_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += alias_line
+alias_line_SOURCES = alias_line.cpp
+alias_line_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += alias_line_v2
+alias_line_v2_SOURCES = alias_line_v2.cpp
+alias_line_v2_CXXFLAGS = $(AM_CXXFLAGS)
