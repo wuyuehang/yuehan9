@@ -143,3 +143,7 @@ copying_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += atomic_count
 atomic_count_SOURCES = atomic_count.cpp
 atomic_count_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += mipmap
+mipmap_SOURCES = mipmap.cpp
+mipmap_CXXFLAGS = $(AM_CXXFLAGS)
