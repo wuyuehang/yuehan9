@@ -27,6 +27,19 @@ public:
 	GlRunner(frameCallBack fcb) {
 		assert(fcb);
 		this->_renderCB = fcb;
+		this->_w = GR_WIDTH;
+		this->_h = GR_HEIGHT;
+		InitWindonw();
+		InitGL();
+		InitQuadDrawPipe();
+	}
+	GlRunner(frameCallBack fcb, int w, int h) {
+		assert(fcb);
+		assert(w > 0);
+		assert(h > 0);
+		this->_renderCB = fcb;
+		this->_w = w;
+		this->_h = h;
 		InitWindonw();
 		InitGL();
 		InitQuadDrawPipe();
@@ -49,6 +62,8 @@ private:
 	void InitQuadDrawPipe();
 	void ReadFile(const char *filename, std::string& source);
 	GLFWwindow *_win;
+	int _w;
+	int _h;
 	frameCallBack _renderCB;
 	// quad
 	GLuint _quadVS;
@@ -88,7 +103,7 @@ void GlRunner::InitWindonw()
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 #endif
 
-	this->_win = glfwCreateWindow(GR_WIDTH, GR_HEIGHT, __FILE__, nullptr, nullptr);
+	this->_win = glfwCreateWindow(this->_w, this->_h, __FILE__, nullptr, nullptr);
 
 	glfwMakeContextCurrent(this->_win);
 
@@ -106,7 +121,7 @@ void GlRunner::InitWindonw()
 
 void GlRunner::InitGL()
 {
-	glViewport(0, 0, GR_WIDTH, GR_HEIGHT);
+	glViewport(0, 0, this->_w, this->_h);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 }
