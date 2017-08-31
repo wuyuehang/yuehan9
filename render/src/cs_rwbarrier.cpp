@@ -1,4 +1,5 @@
 #include "glrunner.h"
+#include <cstring>
 
 #define _sz 4
 
@@ -61,6 +62,17 @@ int main()
 
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
+	// buffer storage for compute shader second atomic counter
+	GLuint csCounter2;
+	glGenBuffers(1, &csCounter2);
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, csCounter2);
+	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), nullptr, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, csCounter2);
+	GLuint *userData = (GLuint *)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER,
+			0, sizeof(GLuint), GL_MAP_WRITE_BIT | GL_MAP_READ_BIT);
+	memset(userData, 0, sizeof(GLuint));
+	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
+
 	// compute the writeObj texture as source texture
 	glGenTextures(1, &dstObj);
 	glBindTexture(GL_TEXTURE_2D, dstObj);
@@ -74,6 +86,13 @@ int main()
 	glUseProgramStages(CSPPO, GL_COMPUTE_SHADER_BIT, CS2);
 
 	glDispatchCompute(1, _sz, 1);
+
+	// retrieve second counter result for a single dispatch computer invocation
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, csCounter2);
+	userData = (GLuint *)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER,
+			0, sizeof(GLuint), GL_MAP_WRITE_BIT | GL_MAP_READ_BIT);
+	std::cout << "Inside a second DispatchCompute " << *userData << std::endl;
+	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
 
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 

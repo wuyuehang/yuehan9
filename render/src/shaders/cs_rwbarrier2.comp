@@ -7,6 +7,8 @@
 
 layout (local_size_x = _X, local_size_y = _Y) in;
 
+layout (binding = 0, offset = 0) uniform atomic_uint csCounter;
+
 layout (binding = 0, rgba8) uniform readonly highp image2D srcObj;
 layout (binding = 1, rgba8) uniform writeonly highp image2D writeObj;
 
@@ -21,4 +23,6 @@ void main()
 	barrier();
 
 	imageStore(writeObj, pos, tmp[gl_LocalInvocationIndex]);
+
+	atomicCounterIncrement(csCounter);
 }
