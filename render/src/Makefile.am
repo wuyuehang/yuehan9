@@ -163,3 +163,11 @@ mipmap_drawcall_preamble_opt_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += mipmap_drawcall_midamble_opt
 mipmap_drawcall_midamble_opt_SOURCES = mipmap_drawcall_midamble_opt.cpp
 mipmap_drawcall_midamble_opt_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += mipmap_drawcall_preamble_r32f
+mipmap_drawcall_preamble_r32f_SOURCES = mipmap_drawcall_preamble_r32f.cpp
+mipmap_drawcall_preamble_r32f_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += mipmap_drawcall_midamble_r32f
+mipmap_drawcall_midamble_r32f_SOURCES = mipmap_drawcall_midamble_r32f.cpp
+mipmap_drawcall_midamble_r32f_CXXFLAGS = $(AM_CXXFLAGS)
