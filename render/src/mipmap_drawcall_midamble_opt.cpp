@@ -86,33 +86,19 @@ int main()
 		1., -1.
 	};
 
-	GLfloat texc_buf[] = {
-		0., 0.,
-		0., 1.,
-		1., 1.,
-		0., 0.,
-		1., 1.,
-		1., 0.
-	};
-
-	GLuint VBO[2];
+	GLuint VBO;
 	GLuint VAO;
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	glGenBuffers(2, VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(pos_buf), pos_buf, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(texc_buf), texc_buf, GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(1);
-
 	// prepare program
-	GLuint VS = runner->BuildShaderProgram("shaders/quad.vert", GL_VERTEX_SHADER);
+	GLuint VS = runner->BuildShaderProgram("shaders/simple.vert", GL_VERTEX_SHADER);
 	GLuint FS = runner->BuildShaderProgram("shaders/pot_quad.frag", GL_FRAGMENT_SHADER);
 	GLuint PPO = runner->BuildProgramPipeline();
 	glUseProgramStages(PPO, GL_VERTEX_SHADER_BIT, VS);

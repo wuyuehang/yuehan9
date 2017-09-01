@@ -63,7 +63,7 @@ int main()
 			GL_UNSIGNED_BYTE, // type
 			srcData);
 
-	GLuint VS = runner->BuildShaderProgram("shaders/quad.vert", GL_VERTEX_SHADER);
+	GLuint VS = runner->BuildShaderProgram("shaders/simple.vert", GL_VERTEX_SHADER);
 	GLuint FS = runner->BuildShaderProgram("shaders/pot_quad.frag", GL_FRAGMENT_SHADER);
 	GLuint PPO = runner->BuildProgramPipeline();
 	glUseProgramStages(PPO, GL_VERTEX_SHADER_BIT, VS);
@@ -86,43 +86,25 @@ int main()
 		-1., -1.,
 		-1., 1.,
 		1., 1.,
-		//
 		-1., -1.,
 		1., 1.,
 		1., -1.
-	};
-
-	GLfloat texc_buf[] = {
-		0., 0.,
-		0., 1.,
-		1., 1.,
-		//
-		0., 0.,
-		1., 1.,
-		1., 0.
 	};
 
 	GLuint mipmapVAO;
 	glGenVertexArrays(1, &mipmapVAO);
 	glBindVertexArray(mipmapVAO);
 
-	GLuint VBO[2];
-	glGenBuffers(2, VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	GLuint VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(pos_buf), pos_buf, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(texc_buf), texc_buf, GL_STATIC_DRAW);
 
-	enum {attr_pos, attr_texc};
+	enum {attr_pos};
 	glEnableVertexAttribArray(attr_pos);
 	glVertexAttribFormat(attr_pos, 2, GL_FLOAT, GL_FALSE, 0);
 	glVertexAttribBinding(attr_pos, 0);
-	glBindVertexBuffer(attr_pos, VBO[0], 0, 2*sizeof(GLfloat));
-
-	glEnableVertexAttribArray(attr_texc);
-	glVertexAttribFormat(attr_texc, 2, GL_FLOAT, GL_FALSE, 0);
-	glVertexAttribBinding(attr_texc, 1);
-	glBindVertexBuffer(attr_texc, VBO[1], 0, 2*sizeof(GLfloat));
+	glBindVertexBuffer(attr_pos, VBO, 0, 2*sizeof(GLfloat));
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClearDepthf(1.0);
