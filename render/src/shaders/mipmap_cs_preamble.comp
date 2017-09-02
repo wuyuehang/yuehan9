@@ -1,0 +1,24 @@
+#version 450
+
+#pragma debug(on)
+
+layout (local_size_x = 4, local_size_y = 4) in;
+
+layout (binding = 0, r32f) uniform readonly highp image2D srcTexObj;
+
+layout (binding = 1, r32f) uniform writeonly highp image2D dstTexObj;
+
+void main()
+{
+	int i = int(gl_GlobalInvocationID.x);
+	int j = int(gl_GlobalInvocationID.y);
+
+	vec4 average = 0.25 * (imageLoad(srcTexObj, ivec2(2*i, 2*j)) +
+		imageLoad(srcTexObj, ivec2(2*i+1, 2*j)) +
+		imageLoad(srcTexObj, ivec2(2*i, 2*j+1)) +
+		imageLoad(srcTexObj, ivec2(2*i+1, 2*j+1)));
+
+	barrier();
+
+	imageStore(dstTexObj, ivec2(i, j), average);
+}
