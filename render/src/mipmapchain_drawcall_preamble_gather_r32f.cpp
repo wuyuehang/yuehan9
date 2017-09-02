@@ -58,20 +58,34 @@ int main()
 		1., -1.
 	};
 
-	GLuint VBO;
+	GLfloat texc_buf[] = {
+		0., 0.,
+		0., 1.,
+		1., 1.,
+		0., 0.,
+		1., 1.,
+		1., 0.
+	};
+
+	GLuint VBO[2];
 	GLuint VAO;
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glGenBuffers(2, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(pos_buf), pos_buf, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(texc_buf), texc_buf, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+
 	// prepare program
-	GLuint VS = runner->BuildShaderProgram("shaders/simple.vert", GL_VERTEX_SHADER);
-	GLuint FS = runner->BuildShaderProgram("shaders/pot_quad.frag", GL_FRAGMENT_SHADER);
+	GLuint VS = runner->BuildShaderProgram("shaders/quad.vert", GL_VERTEX_SHADER);
+	GLuint FS = runner->BuildShaderProgram("shaders/quad.frag", GL_FRAGMENT_SHADER);
 	GLuint PPO = runner->BuildProgramPipeline();
 	glUseProgramStages(PPO, GL_VERTEX_SHADER_BIT, VS);
 	glUseProgramStages(PPO, GL_FRAGMENT_SHADER_BIT, FS);
@@ -90,8 +104,11 @@ int main()
 		w = std::max(w >> 1, 1);
 		h = std::max(h >> 1, 1);
 
+		// fix its lod
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_LOD, k);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, k);
+
 		glProgramUniform1i(FS, glGetUniformLocation(FS, "color2D"), 0);
-		glProgramUniform1i(FS, glGetUniformLocation(FS, "srcLOD"), k);
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, srcTexObj, k+1);
 		assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));
