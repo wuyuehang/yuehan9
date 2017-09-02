@@ -73,7 +73,7 @@ int main()
 	GLuint PPO = runner->BuildProgramPipeline();
 	glUseProgramStages(PPO, GL_COMPUTE_SHADER_BIT, CS);
 
-	glDispatchCompute(1, 1, 1);
+	glDispatchCompute(4, 4, 1);
 
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
