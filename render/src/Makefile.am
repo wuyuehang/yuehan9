@@ -183,3 +183,7 @@ mipmapchain_drawcall_preamble_r32f_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += mipmap_compute_preamble_r32f
 mipmap_compute_preamble_r32f_SOURCES = mipmap_compute_preamble_r32f.cpp
 mipmap_compute_preamble_r32f_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += mipmapchain_compute_preamble_r32f
+mipmapchain_compute_preamble_r32f_SOURCES = mipmapchain_compute_preamble_r32f.cpp
+mipmapchain_compute_preamble_r32f_CXXFLAGS = $(AM_CXXFLAGS)
