@@ -199,3 +199,7 @@ mipmapchain_drawcall_midamble_gather_r32f_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += mipmapchain_drawcall_preamble_gather_r32f
 mipmapchain_drawcall_preamble_gather_r32f_SOURCES = mipmapchain_drawcall_preamble_gather_r32f.cpp
 mipmapchain_drawcall_preamble_gather_r32f_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += pixel_karate
+pixel_karate_SOURCES = pixel_karate.cpp
+pixel_karate_CXXFLAGS = $(AM_CXXFLAGS)
