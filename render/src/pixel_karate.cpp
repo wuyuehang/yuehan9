@@ -21,7 +21,7 @@ void RenderCB(GlRunner *runner)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
 	start_time = clock();
 
@@ -47,7 +47,13 @@ int main(void)
 	glEnableVertexAttribArray(0);
 
 	GLuint VS = runner->BuildShaderProgram("shaders/simple.vert", GL_VERTEX_SHADER);
-	FS = runner->BuildShaderProgram("shaders/pixel_karate.frag", GL_FRAGMENT_SHADER);
+
+	if (argc == 1) {
+		FS = runner->BuildShaderProgram("shaders/pixel_karate.frag", GL_FRAGMENT_SHADER);
+	} else {
+		FS = runner->BuildShaderProgram(argv[1], GL_FRAGMENT_SHADER);
+	}
+
 	GLuint PPO = runner->BuildProgramPipeline();
 	glUseProgramStages(PPO, GL_VERTEX_SHADER_BIT, VS);
 	glUseProgramStages(PPO, GL_FRAGMENT_SHADER_BIT, FS);

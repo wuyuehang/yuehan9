@@ -161,4 +161,13 @@ void main()
 
 	fColor += vec4(0.0, 0.0, up_weight-down_weight, 0.0);
 #endif
+
+#if 0
+	// No.6 jigsaw wave
+	float y1 = mod(x, 0.5);
+	float up_weight = smoothstep(y1-0.02, y1, y);
+	float down_weight = smoothstep(y1, y1+0.02, y);
+	//fColor = vec4(up_weight-down_weight, vec3(0.0));
+	fColor = vec4(up_weight, vec3(0.0));
+#endif
 }
