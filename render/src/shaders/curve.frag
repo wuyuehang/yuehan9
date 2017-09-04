@@ -6,6 +6,7 @@ precision highp float;
 
 uniform uvec2 uResInfo;
 uniform float uTime;
+uniform vec2 uMouse;
 
 out vec4 fColor;
 

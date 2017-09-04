@@ -18,6 +18,13 @@ void RenderCB(GlRunner *runner)
 
 	glProgramUniform1f(FS, glGetUniformLocation(FS, "uTime"), delta);
 
+	double xpos, ypos;
+	glfwGetCursorPos(runner->win(), &xpos, &ypos);
+	xpos = std::max(0.0, std::min(1.0, xpos / GR_WIDTH));
+	ypos = std::max(0.0, std::min(1.0, ypos / GR_HEIGHT));
+
+	glProgramUniform2f(FS, glGetUniformLocation(FS, "uMouse"), 2.0*float(xpos)-1.0, 2*float(ypos)-1.0);
+
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
