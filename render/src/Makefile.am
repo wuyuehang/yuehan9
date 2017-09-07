@@ -203,3 +203,7 @@ mipmapchain_drawcall_preamble_gather_r32f_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += pixel_karate
 pixel_karate_SOURCES = pixel_karate.cpp
 pixel_karate_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += multisample_blit_renderbuffer
+multisample_blit_renderbuffer_SOURCES = multisample_blit_renderbuffer.cpp
+multisample_blit_renderbuffer_CXXFLAGS = $(AM_CXXFLAGS)
