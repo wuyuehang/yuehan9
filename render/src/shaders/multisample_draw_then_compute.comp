@@ -1,0 +1,22 @@
+#version 450
+
+precision highp float;
+
+layout (local_size_x = 2, local_size_y = 2) in;
+
+layout (binding = 0) uniform highp sampler2DMS MS;
+
+layout (binding = 0) buffer ComputeSSBO {
+	ivec4 v[];
+} computeSSBO;
+
+uniform int uSampleIndex;
+
+void main()
+{
+	int idx = int(gl_LocalInvocationIndex);
+
+	vec4 value = texelFetch(MS, ivec2(gl_LocalInvocationID.xy), uSampleIndex);
+
+	computeSSBO.v[idx] = ivec4(value);
+}
