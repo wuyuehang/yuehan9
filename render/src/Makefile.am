@@ -207,3 +207,7 @@ pixel_karate_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += multisample_blit_renderbuffer
 multisample_blit_renderbuffer_SOURCES = multisample_blit_renderbuffer.cpp
 multisample_blit_renderbuffer_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += multisample_texture_fetch
+multisample_texture_fetch_SOURCES = multisample_texture_fetch.cpp
+multisample_texture_fetch_CXXFLAGS = $(AM_CXXFLAGS)
