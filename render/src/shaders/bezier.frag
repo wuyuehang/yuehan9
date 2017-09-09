@@ -1,5 +1,6 @@
 #version 450
 
+/* used by pixel_karate demo */
 precision highp float;
 
 uniform uvec2 uResInfo;

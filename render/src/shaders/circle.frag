@@ -1,5 +1,6 @@
 #version 450
 
+/* used by pixel_karate demo */
 #define SEL_TOPLEFT	1
 #define SEL_BOTLEFT	1
 #define SEL_TOPRIGH	1

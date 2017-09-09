@@ -1,5 +1,6 @@
 #version 450
 
+/* used by pixel_karate demo */
 #define PI	3.141592657589793
 
 precision highp float;
