@@ -10,6 +10,8 @@ layout (binding = 0) buffer ComputeSSBO {
 	ivec4 v[];
 } computeSSBO;
 
+layout (binding = 0) uniform writeonly highp image2D writeObj;
+
 uniform int uSampleIndex;
 
 void main()
@@ -18,5 +20,9 @@ void main()
 
 	vec4 value = texelFetch(MS, ivec2(gl_LocalInvocationID.xy), uSampleIndex);
 
+	barrier();
+
 	computeSSBO.v[idx] = ivec4(value);
+
+	imageStore(writeObj, ivec2(gl_LocalInvocationID.xy), value);
 }

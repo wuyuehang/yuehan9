@@ -66,6 +66,21 @@ int main()
 	glFinish();
 
 	/* compute */
+	GLuint dstTexObj;
+	glGenTextures(1, &dstTexObj);
+	glBindTexture(GL_TEXTURE_2D, dstTexObj);
+	glTexImage2D(GL_TEXTURE_2D,
+			0, // base level
+			GL_RGBA8, // internal format
+			2, // w
+			2, // h
+			0, // border
+			GL_RGBA, // format
+			GL_UNSIGNED_BYTE, // type
+			nullptr);
+
+	glBindImageTexture(0, dstTexObj, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
 	GLuint CS = runner->BuildShaderProgram("shaders/multisample_draw_then_compute.comp", GL_COMPUTE_SHADER);
 	GLuint CSppo = runner->BuildProgramPipeline();
 	glUseProgramStages(CSppo, GL_COMPUTE_SHADER_BIT, CS);
@@ -85,7 +100,8 @@ int main()
 		GLint *res = (GLint *)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,
 				0, 16*sizeof(GLint), GL_MAP_WRITE_BIT);
 
-		std::cout << "######## Sample Plane (" << k << ") #######" << std::endl;
+		/* verify on ssbo */
+		std::cout << "######## SSBO Sample Plane (" << k << ") #######" << std::endl;
 		for (int i = 1; i >= 0; i--) {
 			for (int j = 0; j < 8; j++) {
 				if (j%4 == 0) {
@@ -102,8 +118,31 @@ int main()
 		}
 
 		glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-	}
 
+		GLubyte texData[16];
+		glGetTexImage(GL_TEXTURE_2D,
+				0, // base level
+				GL_RGBA, // format
+				GL_UNSIGNED_BYTE, // type
+				texData);
+
+		/* verify on write only image */
+		std::cout << "######## Image Sample Plane (" << k << ") #######" << std::endl;
+		for (int i = 1; i >= 0; i--) {
+			for (int j = 0; j < 8; j++) {
+				if (j%4 == 0) {
+					std::cout << "(";
+				}
+				std::cout << (int)texData[i*8+j];
+				if (j%4 == 3) {
+					std::cout << ")";
+				} else {
+					std::cout << ", ";
+				}
+			}
+			std::cout << std::endl;
+		}
+	}
 
 	return 0;
 }
