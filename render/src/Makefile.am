@@ -215,3 +215,7 @@ multisample_texture_fetch_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += multisample_draw_then_compute
 multisample_draw_then_compute_SOURCES = multisample_draw_then_compute.cpp
 multisample_draw_then_compute_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += dfdx_dfdy
+dfdx_dfdy_SOURCES = dfdx_dfdy.cpp
+dfdx_dfdy_CXXFLAGS = $(AM_CXXFLAGS)
