@@ -223,3 +223,7 @@ dfdx_dfdy_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += lod
 lod_SOURCES = lod.cpp
 lod_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += manual_lod
+manual_lod_SOURCES = manual_lod.cpp
+manual_lod_CXXFLAGS = $(AM_CXXFLAGS)
