@@ -219,3 +219,7 @@ multisample_draw_then_compute_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += dfdx_dfdy
 dfdx_dfdy_SOURCES = dfdx_dfdy.cpp
 dfdx_dfdy_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += lod
+lod_SOURCES = lod.cpp
+lod_CXXFLAGS = $(AM_CXXFLAGS)
