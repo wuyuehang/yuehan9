@@ -227,3 +227,7 @@ lod_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += manual_lod
 manual_lod_SOURCES = manual_lod.cpp
 manual_lod_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += mesh_ripple
+mesh_ripple_SOURCES = mesh_ripple.cpp
+mesh_ripple_CXXFLAGS = $(AM_CXXFLAGS)
