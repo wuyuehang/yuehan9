@@ -231,3 +231,7 @@ manual_lod_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += mesh_ripple
 mesh_ripple_SOURCES = mesh_ripple.cpp
 mesh_ripple_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += subdivide_plane
+subdivide_plane_SOURCES = subdivide_plane.cpp
+subdivide_plane_CXXFLAGS = $(AM_CXXFLAGS)
