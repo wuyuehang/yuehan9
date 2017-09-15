@@ -20,19 +20,22 @@ void main()
 	float x = v0.x;
 	float y = v0.y;
 
-#if 0
+	// all 3 vertice stays in same height
+	float height = v0.z;
+
+#if 1
 	for (int i = 0; i < subdivision*subdivision; i++) {
 
-		gl_Position = uMVP * vec4(x, 0, y, 1);
+		gl_Position = uMVP * vec4(x, height, y, 1);
 		EmitVertex();
 
-		gl_Position = uMVP * vec4(x, 0, y+deltay, 1);
+		gl_Position = uMVP * vec4(x, height, y+deltay, 1);
 		EmitVertex();
 
-		gl_Position = uMVP * vec4(x+deltax, 0, y, 1);
+		gl_Position = uMVP * vec4(x+deltax, height, y, 1);
 		EmitVertex();
 
-		gl_Position = uMVP * vec4(x+deltax, 0, y+deltay, 1);
+		gl_Position = uMVP * vec4(x+deltax, height, y+deltay, 1);
 		EmitVertex();
 
 		EndPrimitive();
@@ -48,16 +51,16 @@ void main()
 	for (int i = 0; i < subdivision; i++) {
 		for (int j = 0; j < subdivision; j++) {
 
-			gl_Position = uMVP * vec4(x+j*deltax, 0, y+i*deltay, 1);
+			gl_Position = uMVP * vec4(x+j*deltax, height, y+i*deltay, 1);
 			EmitVertex();
 
-			gl_Position = uMVP * vec4(x+j*deltax, 0, y+(i+1)*deltay, 1);
+			gl_Position = uMVP * vec4(x+j*deltax, height, y+(i+1)*deltay, 1);
 			EmitVertex();
 
-			gl_Position = uMVP * vec4(x+(j+1)*deltax, 0, y+i*deltay, 1);
+			gl_Position = uMVP * vec4(x+(j+1)*deltax, height, y+i*deltay, 1);
 			EmitVertex();
 
-			gl_Position = uMVP * vec4(x+(j+1)*deltax, 0, y+(i+1)*deltay, 1);
+			gl_Position = uMVP * vec4(x+(j+1)*deltax, height, y+(i+1)*deltay, 1);
 			EmitVertex();
 
 			EndPrimitive();

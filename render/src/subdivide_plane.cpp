@@ -14,7 +14,7 @@ void RenderCB(GlRunner *runner)
 
 	glProgramUniform4f(FS, glGetUniformLocation(FS, "uColor"), 1.0, 1.0, 0.0, 0.0);
 
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 5);
 }
 
 int main()
@@ -23,9 +23,9 @@ int main()
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	GLuint VAO, VBO;
+	GLuint VAO, VBO[2];
 	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
+	glGenBuffers(2, VBO);
 
 	GLfloat pos[] = {
 		-1.0, 1.0,
@@ -34,13 +34,22 @@ int main()
 	};
 
 	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(pos), pos, GL_STATIC_DRAW);
-
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (GLvoid *)0);
 
-	VS = runner->BuildShaderProgram("shaders/simple.vert", GL_VERTEX_SHADER);
+	GLfloat vary_height[] = {
+		-1.0, -0.5, 0.0, 0.5, 0.75
+	};
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vary_height), vary_height, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (GLvoid *)0);
+	glVertexAttribDivisor(1, 1);
+
+	VS = runner->BuildShaderProgram("shaders/subdivide_plane.vert", GL_VERTEX_SHADER);
 	GS = runner->BuildShaderProgram("shaders/subdivide_plane.geo", GL_GEOMETRY_SHADER);
 	FS = runner->BuildShaderProgram("shaders/simple.frag", GL_FRAGMENT_SHADER);
 	GLuint PPO = runner->BuildProgramPipeline();
