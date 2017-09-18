@@ -247,3 +247,7 @@ gpu_gasket2d_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += cpu_wf_sphere
 cpu_wf_sphere_SOURCES = cpu_wf_sphere.cpp
 cpu_wf_sphere_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += gpu_wf_sphere
+gpu_wf_sphere_SOURCES = gpu_wf_sphere.cpp
+gpu_wf_sphere_CXXFLAGS = $(AM_CXXFLAGS)
