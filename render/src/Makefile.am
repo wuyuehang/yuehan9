@@ -239,3 +239,7 @@ subdivide_plane_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += cpu_gasket2d
 cpu_gasket2d_SOURCES = cpu_gasket2d.cpp
 cpu_gasket2d_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += gpu_gasket2d
+gpu_gasket2d_SOURCES = gpu_gasket2d.cpp
+gpu_gasket2d_CXXFLAGS = $(AM_CXXFLAGS)
