@@ -235,3 +235,7 @@ mesh_ripple_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += subdivide_plane
 subdivide_plane_SOURCES = subdivide_plane.cpp
 subdivide_plane_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += cpu_gasket2d
+cpu_gasket2d_SOURCES = cpu_gasket2d.cpp
+cpu_gasket2d_CXXFLAGS = $(AM_CXXFLAGS)
