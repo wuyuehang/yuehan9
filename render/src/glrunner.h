@@ -248,11 +248,13 @@ GLuint GlRunner::BuildShaderProgram(const char *filename, GLenum type)
 
 	std::cout << std::endl << filename << std::endl;
 
+#if 0
 	LogProgramInputAttribs(ShaderObj);
 
 	LogProgramUniform(ShaderObj);
 
 	LogProgramUniformBlock(ShaderObj);
+#endif
 
 	return ShaderObj;
 }
