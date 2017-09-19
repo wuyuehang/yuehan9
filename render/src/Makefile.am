@@ -255,3 +255,7 @@ gpu_wf_sphere_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += cpu_recursive_gasket2d
 cpu_recursive_gasket2d_SOURCES = cpu_recursive_gasket2d.cpp
 cpu_recursive_gasket2d_CXXFLAGS = $(AM_CFLAGS)
+
+bin_PROGRAMS += cpu_recursive_gasket3d
+cpu_recursive_gasket3d_SOURCES = cpu_recursive_gasket3d.cpp
+cpu_recursive_gasket3d_CXXFLAGS = $(AM_CFLAGS)
