@@ -1,6 +1,5 @@
 bin_PROGRAMS =
 
-AM_CFLAGS = $(GCC_CFLAGS)
 AM_CXXFLAGS = $(GXX_CFLAGS)
 LDADD = @X11_LIBS@ @GLFW3_LIBS@ @GLEW_LIBS@ @ASSIMP_LIBS@ -lm -lSOIL
 
@@ -254,8 +253,12 @@ gpu_wf_sphere_CXXFLAGS = $(AM_CXXFLAGS)
 
 bin_PROGRAMS += cpu_recursive_gasket2d
 cpu_recursive_gasket2d_SOURCES = cpu_recursive_gasket2d.cpp
-cpu_recursive_gasket2d_CXXFLAGS = $(AM_CFLAGS)
+cpu_recursive_gasket2d_CXXFLAGS = $(AM_CXXFLAGS)
 
 bin_PROGRAMS += cpu_recursive_gasket3d
 cpu_recursive_gasket3d_SOURCES = cpu_recursive_gasket3d.cpp
-cpu_recursive_gasket3d_CXXFLAGS = $(AM_CFLAGS)
+cpu_recursive_gasket3d_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += edge_detect
+edge_detect_SOURCES = edge_detect.cpp
+edge_detect_CXXFLAGS = $(AM_CXXFLAGS)
