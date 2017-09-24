@@ -266,3 +266,7 @@ edge_detect_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += gaussian_blur
 gaussian_blur_SOURCES = gaussian_blur.cpp
 gaussian_blur_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += bloom
+bloom_SOURCES = bloom.cpp
+bloom_CXXFLAGS = $(AM_CXXFLAGS)
