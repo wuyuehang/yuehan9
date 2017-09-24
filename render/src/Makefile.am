@@ -270,3 +270,7 @@ gaussian_blur_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += bloom
 bloom_SOURCES = bloom.cpp
 bloom_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += cartoonify
+cartoonify_SOURCES = cartoonify.cpp
+cartoonify_CXXFLAGS = $(AM_CXXFLAGS)
