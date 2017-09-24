@@ -262,3 +262,7 @@ cpu_recursive_gasket3d_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += edge_detect
 edge_detect_SOURCES = edge_detect.cpp
 edge_detect_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += gaussian_blur
+gaussian_blur_SOURCES = gaussian_blur.cpp
+gaussian_blur_CXXFLAGS = $(AM_CXXFLAGS)
