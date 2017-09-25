@@ -274,3 +274,7 @@ bloom_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += cartoonify
 cartoonify_SOURCES = cartoonify.cpp
 cartoonify_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += alpha_map
+alpha_map_SOURCES = alpha_map.cpp
+alpha_map_CXXFLAGS = $(AM_CXXFLAGS)
