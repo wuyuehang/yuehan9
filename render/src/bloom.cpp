@@ -8,7 +8,7 @@ clock_t start_time;
 #define _WEIGHT_NUM 5
 GLfloat pWeights[_WEIGHT_NUM] = {0.0};
 
-// srcTexObj---bloomTexObj---vblurTexObj---hblurTexObj---flipTexObj
+// srcTexObj---bloomTexObj---(vblurTexObj---hblurTexObj)xN---flipTexObj
 GLuint srcTexObj;
 GLuint bloomTexObj;
 GLuint bloomFBO;
@@ -28,16 +28,6 @@ float GaussianWeight(float sigma, float offset)
 
 void RenderCB(GlRunner *runner)
 {
-	glClearColor(0.2, 0.1, 0.2, 0.0);
-	glClearDepthf(1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//runner->DrawQuad(srcTexObj);
-	//runner->DrawQuad(bloomTexObj);
-	//runner->DrawQuad(vblurTexObj);
-	//runner->DrawQuad(hblurTexObj);
-	//runner->DrawQuad(flipTexObj);
-
 	clock_t current_time = clock();
 	float delta = 0.00001 *(current_time - start_time);
 
@@ -52,6 +42,8 @@ int main()
 
 	// hardcode framebuffer size
 	GlRunner *runner = new GlRunner(RenderCB, 1200, 1200);
+
+	glDisable(GL_DEPTH_TEST);
 
 	/* 1. prepare common resource */
 	GLuint VS = runner->BuildShaderProgram("shaders/quad.vert", GL_VERTEX_SHADER);
@@ -151,12 +143,8 @@ int main()
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bloomTexObj, 0);
 		assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-		glClearColor(0.2, 0.1, 0.2, 0.0);
-		glClearDepthf(1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindTexture(GL_TEXTURE_2D, srcTexObj);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	/* gaussian vertical blur */
@@ -174,16 +162,11 @@ int main()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, bloomFBO);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, vblurTexObj, 0);
 		assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-		glClearColor(0.2, 0.1, 0.2, 0.0);
-		glClearDepthf(1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindTexture(GL_TEXTURE_2D, bloomTexObj);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	/* gaussian horizontal blur */
@@ -201,16 +184,36 @@ int main()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, bloomFBO);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hblurTexObj, 0);
 		assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-		glClearColor(0.2, 0.1, 0.2, 0.0);
-		glClearDepthf(1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindTexture(GL_TEXTURE_2D, vblurTexObj);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	for (int loop = 1; loop <= 30; loop++) {
+
+		/* 2nd gassian vertical blur */
+		{
+			glUseProgramStages(PPO, GL_FRAGMENT_SHADER_BIT, blur_verFS);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, vblurTexObj, 0);
+			assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+			glBindTexture(GL_TEXTURE_2D, hblurTexObj);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		}
+
+		/* 2nd gaussian horizontal blur */
+		{
+			glUseProgramStages(PPO, GL_FRAGMENT_SHADER_BIT, blur_horFS);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hblurTexObj, 0);
+			assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+			glBindTexture(GL_TEXTURE_2D, vblurTexObj);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		}
 	}
 
 	/* merge blurred with original texture */
@@ -236,16 +239,11 @@ int main()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, bloomFBO);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, flipTexObj, 0);
 		assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));
 	}
 
 	{
-		glClearColor(0.2, 0.1, 0.2, 0.0);
-		glClearDepthf(1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, hblurTexObj);
 		glProgramUniform1i(mergeFS, glGetUniformLocation(mergeFS, "tBlur2D"), 0);
