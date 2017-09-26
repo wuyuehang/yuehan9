@@ -6,6 +6,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "glrunner.h"
 
+#define _calculate_in_viewspace 1
+
 GLfloat pos_buf[] = {
 		// top face
 		-0.5f, 0.5f, -0.5f,
@@ -113,6 +115,8 @@ GLuint pipe;
 GLuint model_uni;
 GLuint light_uni;
 
+glm::mat4 view_mat;
+
 void RenderCB(GlRunner *runner)
 {
 	glClearColor(0.05, 0.05, 0.05, 1.0);
@@ -140,7 +144,12 @@ void RenderCB(GlRunner *runner)
 	glProgramUniform4f(FS[1], glGetUniformLocation(FS[1], "uColor"), 8.0f, 8.0f, 0.0f, 1.0f);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
+#if _calculate_in_viewspace
+	light_location = glm::mat3(view_mat * rotate_mat) * light_location;
+#else
 	light_location = glm::mat3(rotate_mat) * light_location;
+#endif
+
 	/* setup cube box */
 	scale_mat = glm::mat4(1.0f);
 	rotate_mat = glm::mat4(1.0f);
@@ -156,8 +165,15 @@ int main(int argc, char **argv)
 {
 	GlRunner *runner = new GlRunner(RenderCB);
 
+#if _calculate_in_viewspace
+	// just another choice to do light equation in view coordinate space
+	VS = runner->BuildShaderProgram("shaders/phong2.vert", GL_VERTEX_SHADER);
+	FS[0] = runner->BuildShaderProgram("shaders/phong2.frag", GL_FRAGMENT_SHADER);
+#else
 	VS = runner->BuildShaderProgram("shaders/phong.vert", GL_VERTEX_SHADER);
 	FS[0] = runner->BuildShaderProgram("shaders/phong.frag", GL_FRAGMENT_SHADER);
+#endif
+
 	FS[1] = runner->BuildShaderProgram("shaders/simple.frag", GL_FRAGMENT_SHADER);
 
 	pipe = runner->BuildProgramPipeline();
@@ -189,7 +205,7 @@ int main(int argc, char **argv)
 	/* setup unchanged matrixs and vectors */
 	glm::vec3 camera_location(-2, 1, 4);
 
-	glm::mat4 view_mat = glm::lookAt(
+	view_mat = glm::lookAt(
 			camera_location,
 			glm::vec3(0, 0, 0),
 			glm::vec3(0, 1, 0)
