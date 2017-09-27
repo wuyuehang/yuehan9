@@ -278,3 +278,7 @@ cartoonify_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += alpha_map
 alpha_map_SOURCES = alpha_map.cpp
 alpha_map_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += blinn_phong_model
+blinn_phong_model_SOURCES = blinn_phong_model.cpp
+blinn_phong_model_CXXFLAGS = $(AM_CXXFLAGS)
