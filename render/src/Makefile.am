@@ -282,3 +282,7 @@ alpha_map_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += blinn_phong_model
 blinn_phong_model_SOURCES = blinn_phong_model.cpp
 blinn_phong_model_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += rim_light_model
+rim_light_model_SOURCES = rim_light_model.cpp
+rim_light_model_CXXFLAGS = $(AM_CXXFLAGS)
