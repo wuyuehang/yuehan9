@@ -286,3 +286,7 @@ blinn_phong_model_CXXFLAGS = $(AM_CXXFLAGS)
 bin_PROGRAMS += rim_light_model
 rim_light_model_SOURCES = rim_light_model.cpp
 rim_light_model_CXXFLAGS = $(AM_CXXFLAGS)
+
+bin_PROGRAMS += basic_layered_rendering
+basic_layered_rendering_SOURCES = basic_layered_rendering.cpp
+basic_layered_rendering_CXXFLAGS = $(AM_CXXFLAGS)
