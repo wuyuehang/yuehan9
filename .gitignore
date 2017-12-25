@@ -16,3 +16,4 @@ missing
 stamp-h1
 .deps/
 *.o
+*.ppm
